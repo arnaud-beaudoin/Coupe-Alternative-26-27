@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Pêche Aquazo</title>
+
+<style>
+
+/* =========================================================
+   BASE
+========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    background: #000;
+
+    font-family: Arial, sans-serif;
+}
+
+
+/* =========================================================
+   JEU
+========================================================= */
+
+#game {
+
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    overflow: hidden;
+
+    background: #000;
+
+    cursor: none;
+}
+
+
+/* =========================================================
+   ÉCRAN D'ACCUEIL
+========================================================= */
+
+#startScreen {
+
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    z-index: 1000;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    background: #000;
+
+    overflow: hidden;
+}
+
+#startBackground {
+
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    user-select: none;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   BOUTON COMMENCER
+========================================================= */
+
+#startButton {
+
+    position: absolute;
+
+    z-index: 2;
+
+    bottom: 40px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    padding: 10px 32px;
+
+    border: 3px solid white;
+
+    border-radius: 10px;
+
+    background: rgba(0, 0, 0, .75);
+
+    color: white;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        transform .15s ease,
+        background .15s ease,
+        color .15s ease;
+}
+
+#startButton:hover {
+
+    transform:
+        translateX(-50%)
+        scale(1.06);
+
+    background:
+        rgba(255,255,255,.9);
+
+    color: black;
+}
+
+#startButton:disabled {
+
+    cursor: default;
+
+    opacity: .7;
+}
+
+
+/* =========================================================
+   TRANSITION — PLANCHE
+========================================================= */
+
+#transitionScreen {
+
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    z-index: 900;
+
+    display: none;
+
+    overflow: hidden;
+
+    pointer-events: none;
+
+    background: transparent;
+}
+
+#transitionImage {
+
+    position: absolute;
+
+    left: 0;
+
+    top: 0;
+
+    width: 100vw;
+
+    height: 100vh;
+
+    object-fit: cover;
+
+    transform:
+        translateY(-100%);
+
+    will-change:
+        transform;
+}
+
+
+/*
+   Animation :
+
+   0%      = hors écran en haut
+   33.33%  = arrive au centre
+   66.66%  = reste 1 seconde
+   100%    = repart vers le haut
+*/
+
+#transitionScreen.play #transitionImage {
+
+    animation:
+        transitionAnimation 3s ease-in-out forwards;
+}
+
+@keyframes transitionAnimation {
+
+    0% {
+
+        transform:
+            translateY(-100%);
+    }
+
+    33.333% {
+
+        transform:
+            translateY(0);
+    }
+
+    66.666% {
+
+        transform:
+            translateY(0);
+    }
+
+    100% {
+
+        transform:
+            translateY(-100%);
+    }
+}
+
+
+/* =========================================================
+   DÉCOMPTE
+========================================================= */
+
+#countdownScreen {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 800;
+
+    display: none;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background: transparent;
+
+    pointer-events: none;
+}
+
+#countdown {
+
+    color: white;
+
+    font-size: 120px;
+
+    font-weight: 900;
+
+    text-shadow:
+        0 5px 15px rgba(0,0,0,.8);
+
+    opacity: 0;
+
+    line-height: 1;
+}
+
+.countdownAnimate {
+
+    animation:
+        countdownPop .8s ease-out forwards;
+}
+
+@keyframes countdownPop {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            scale(1.6);
+    }
+
+    25% {
+
+        opacity: 1;
+
+        transform:
+            scale(1);
+    }
+
+    75% {
+
+        opacity: 1;
+
+        transform:
+            scale(1);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            scale(.8);
+    }
+}
+
+
+/* =========================================================
+   EAU / ARRIÈRE-PLAN
+========================================================= */
+
+#water {
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 100vw;
+
+    will-change:
+        transform;
+}
+
+#background {
+
+    display: block;
+
+    width: 100vw;
+
+    height: auto;
+
+    max-width: none;
+
+    user-select: none;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   POISSONS
+========================================================= */
+
+.fish {
+
+    position: absolute;
+
+    width: 110px;
+    height: 80px;
+
+    object-fit: contain;
+
+    transform:
+        translate(-50%, -50%);
+
+    pointer-events: none;
+
+    z-index: 10;
+
+    user-select: none;
+
+    will-change:
+        left,
+        top,
+        transform,
+        opacity;
+
+    transition:
+        opacity .25s ease;
+}
+
+
+/* Poisson attrapé */
+
+.fish.caught {
+
+    opacity: 0;
+
+    transform:
+        translate(-50%, -50%)
+        scale(1.8)
+        rotate(20deg);
+}
+
+
+/* =========================================================
+   LIGNE À PÊCHE
+========================================================= */
+
+#fishingLine {
+
+    position: absolute;
+
+    width: 3px;
+
+    background: white;
+
+    transform-origin:
+        top center;
+
+    z-index: 50;
+
+    pointer-events: none;
+
+    box-shadow:
+        0 0 2px rgba(0,0,0,.8);
+}
+
+
+/* =========================================================
+   HAMEÇON
+========================================================= */
+
+#hook {
+
+    position: absolute;
+
+    width: 24px;
+    height: 32px;
+
+    transform:
+        translate(-50%, -4px);
+
+    z-index: 51;
+
+    pointer-events: none;
+}
+
+#hook::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 10px;
+    top: 0;
+
+    width: 4px;
+    height: 19px;
+
+    background: #ddd;
+
+    border-radius: 3px;
+}
+
+#hook::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 5px;
+    top: 14px;
+
+    width: 14px;
+    height: 14px;
+
+    border:
+        4px solid #ddd;
+
+    border-top-color:
+        transparent;
+
+    border-left-color:
+        transparent;
+
+    border-radius:
+        0 0 12px 0;
+
+    transform:
+        rotate(20deg);
+}
+
+
+/* =========================================================
+   INTERFACE
+========================================================= */
+
+#ui {
+
+    position: absolute;
+
+    top: 20px;
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 30px;
+
+    padding: 10px 22px;
+
+    background:
+        rgba(0, 0, 0, .65);
+
+    border-radius: 12px;
+
+    color: white;
+
+    font-size: 24px;
+
+    font-weight: bold;
+
+    z-index: 100;
+
+    pointer-events: none;
+}
+
+#score {
+
+    white-space: nowrap;
+}
+
+#timer {
+
+    min-width: 35px;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   BULLES
+========================================================= */
+
+.bubble {
+
+    position: fixed;
+
+    width: 8px;
+    height: 8px;
+
+    border:
+        2px solid rgba(255,255,255,.8);
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    z-index: 60;
+
+    animation:
+        bubbleUp 2s ease-out forwards;
+}
+
+@keyframes bubbleUp {
+
+    0% {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(.7);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translateY(-80px)
+            scale(1.3);
+    }
+}
+
+
+/* =========================================================
+   ÉCRAN DE FIN
+========================================================= */
+
+#endScreen {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: none;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-direction: column;
+
+    background:
+        rgba(0,0,0,.75);
+
+    color: white;
+
+    z-index: 200;
+
+    text-align: center;
+}
+
+#endScreen h1 {
+
+    margin:
+        0 0 15px;
+
+    font-size: 48px;
+}
+
+#finalScore {
+
+    font-size: 28px;
+
+    margin-bottom: 30px;
+}
+
+#restart {
+
+    padding:
+        14px 28px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: white;
+
+    color: black;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        transform .15s ease;
+}
+
+#restart:hover {
+
+    transform:
+        scale(1.05);
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     ÉCRAN D'ACCUEIL
+====================================================== -->
+
+<div id="startScreen">
+
+    <img
+        id="startBackground"
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/P%C3%AAche%20Aquazo.png?raw=true"
+        alt=""
+    >
+
+    <button
+        id="startButton"
+    >
+        COMMENCER
+    </button>
+
+</div>
+
+
+<!-- =====================================================
+     TRANSITION
+====================================================== -->
+
+<div id="transitionScreen">
+
+    <img
+        id="transitionImage"
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/Planche.png?raw=true"
+        alt=""
+    >
+
+</div>
+
+
+<!-- =====================================================
+     DÉCOMPTE
+====================================================== -->
+
+<div id="countdownScreen">
+
+    <div id="countdown">
+        3
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     JEU
+====================================================== -->
+
+<div id="game">
+
+
+    <!-- =================================================
+         ARRIÈRE-PLAN
+    ================================================== -->
+
+    <div id="water">
+
+        <img
+            id="background"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/Cr%C3%A9ation%20sans%20titre%20(1).png?raw=true"
+            alt=""
+        >
+
+
+        <!-- =============================================
+             POISSONS COMMUNS — 1 POINT
+        ============================================== -->
+
+        <img
+            class="fish common"
+            data-x="20"
+            data-y="20"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="35"
+            data-y="28"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="55"
+            data-y="18"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="72"
+            data-y="25"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="82"
+            data-y="38"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="25"
+            data-y="45"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="48"
+            data-y="52"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="67"
+            data-y="58"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="87"
+            data-y="65"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="35"
+            data-y="72"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish common"
+            data-x="60"
+            data-y="82"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4.png?raw=true"
+            alt=""
+        >
+
+
+        <!-- =============================================
+             POISSONS RARES — 2 POINTS
+        ============================================== -->
+
+        <img
+            class="fish rare"
+            data-x="15"
+            data-y="32"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/5.png?raw=true
+            alt=""
+        >
+
+        <img
+            class="fish rare"
+            data-x="42"
+            data-y="38"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/5.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish rare"
+            data-x="62"
+            data-y="30"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/5.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish rare"
+            data-x="78"
+            data-y="48"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/5.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish rare"
+            data-x="22"
+            data-y="62"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/5.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish rare"
+            data-x="50"
+            data-y="68"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/5.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish rare"
+            data-x="75"
+            data-y="78"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/5.png?raw=true"
+            alt=""
+        >
+
+
+        <!-- =============================================
+             POISSONS GALACTIQUES — 5 POINTS
+        ============================================== -->
+
+        <img
+            class="fish galactic"
+            data-x="30"
+            data-y="35"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/3.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish galactic"
+            data-x="68"
+            data-y="42"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/3.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish galactic"
+            data-x="45"
+            data-y="58"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/3.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish galactic"
+            data-x="82"
+            data-y="70"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/3.png?raw=true"
+            alt=""
+        >
+
+        <img
+            class="fish galactic"
+            data-x="55"
+            data-y="88"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/3.png?raw=true"
+            alt=""
+        >
+
+    </div>
+
+
+    <!-- =================================================
+         LIGNE
+    ================================================== -->
+
+    <div id="fishingLine"></div>
+
+
+    <!-- =================================================
+         HAMEÇON
+    ================================================== -->
+
+    <div id="hook"></div>
+
+
+    <!-- =================================================
+         INTERFACE
+    ================================================== -->
+
+    <div id="ui">
+
+        <div id="score">
+            Poissons : 0
+        </div>
+
+        <div id="timer">
+            20
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         ÉCRAN DE FIN
+    ================================================== -->
+
+    <div id="endScreen">
+
+        <h1>
+            Fin de la pêche !
+        </h1>
+
+        <div id="finalScore">
+            Poissons attrapés : 0
+        </div>
+
+        <button id="restart">
+            Rejouer
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   ÉLÉMENTS HTML
+========================================================= */
+
+const game =
+    document.getElementById("game");
+
+const water =
+    document.getElementById("water");
+
+const background =
+    document.getElementById("background");
+
+const fishingLine =
+    document.getElementById("fishingLine");
+
+const hook =
+    document.getElementById("hook");
+
+const scoreElement =
+    document.getElementById("score");
+
+const timerElement =
+    document.getElementById("timer");
+
+const endScreen =
+    document.getElementById("endScreen");
+
+const finalScore =
+    document.getElementById("finalScore");
+
+const restartButton =
+    document.getElementById("restart");
+
+
+/* =========================================================
+   ÉCRAN D'ACCUEIL
+========================================================= */
+
+const startScreen =
+    document.getElementById("startScreen");
+
+const startButton =
+    document.getElementById("startButton");
+
+const transitionScreen =
+    document.getElementById("transitionScreen");
+
+const transitionImage =
+    document.getElementById("transitionImage");
+
+const countdownScreen =
+    document.getElementById("countdownScreen");
+
+const countdown =
+    document.getElementById("countdown");
+
+
+/* =========================================================
+   POISSONS
+========================================================= */
+
+const fishes =
+    Array.from(
+        document.querySelectorAll(".fish")
+    );
+
+
+/* =========================================================
+   VARIABLES DU JEU
+========================================================= */
+
+let score = 0;
+
+let timeLeft = 20;
+
+let gameRunning = false;
+
+let gameStarted = false;
+
+let mouseX =
+    window.innerWidth / 2;
+
+let mouseY =
+    window.innerHeight / 2;
+
+let waterY = 0;
+
+let maxScroll = 0;
+
+let startTime = 0;
+
+
+/* =========================================================
+   SOURIS
+========================================================= */
+
+document.addEventListener(
+    "mousemove",
+    function(event) {
+
+        mouseX =
+            event.clientX;
+
+        mouseY =
+            event.clientY;
+
+    }
+);
+
+
+/* =========================================================
+   CALCUL DU DÉFILEMENT
+========================================================= */
+
+function calculateScroll() {
+
+    if (!background.complete) {
+        return;
+    }
+
+
+    const imageHeight =
+        background.getBoundingClientRect().height;
+
+
+    maxScroll =
+        Math.max(
+            0,
+            imageHeight -
+            window.innerHeight
+        );
+}
+
+
+/* =========================================================
+   CHARGEMENT DE L'ARRIÈRE-PLAN
+========================================================= */
+
+background.addEventListener(
+    "load",
+    function() {
+
+        calculateScroll();
+
+
+        /*
+         * Le jeu commence en bas de l'image.
+         */
+
+        waterY =
+            -maxScroll;
+
+
+        water.style.transform =
+            `translateY(${waterY}px)`;
+
+    }
+);
+
+
+/*
+ * Si l'image était déjà en cache
+ * au moment du lancement.
+ */
+
+if (background.complete) {
+
+    calculateScroll();
+
+    waterY =
+        -maxScroll;
+
+    water.style.transform =
+        `translateY(${waterY}px)`;
+}
+
+
+/* =========================================================
+   REDIMENSIONNEMENT
+========================================================= */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        const oldMaxScroll =
+            maxScroll;
+
+
+        calculateScroll();
+
+
+        /*
+         * On conserve approximativement
+         * la position actuelle lors d'un
+         * changement de taille de fenêtre.
+         */
+
+        if (
+            gameRunning &&
+            oldMaxScroll > 0
+        ) {
+
+            const progress =
+                1 -
+                (
+                    Math.abs(waterY) /
+                    oldMaxScroll
+                );
+
+
+            waterY =
+                -maxScroll +
+                maxScroll * progress;
+
+
+            water.style.transform =
+                `translateY(${waterY}px)`;
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   LIGNE ET HAMEÇON
+========================================================= */
+
+function updateHook() {
+
+    const startX =
+        window.innerWidth / 2;
+
+    const startY =
+        0;
+
+
+    const hookX =
+        mouseX;
+
+    const hookY =
+        mouseY;
+
+
+    /*
+     * Position du hameçon.
+     */
+
+    hook.style.left =
+        `${hookX}px`;
+
+    hook.style.top =
+        `${hookY}px`;
+
+
+    /*
+     * Calcul de la longueur
+     * de la ligne.
+     */
+
+    const dx =
+        hookX -
+        startX;
+
+    const dy =
+        hookY -
+        startY;
+
+
+    const length =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
+        );
+
+
+    /*
+     * Angle de la ligne.
+     */
+
+    const angle =
+        Math.atan2(dy, dx) -
+        Math.PI / 2;
+
+
+    fishingLine.style.left =
+        `${startX - 1.5}px`;
+
+    fishingLine.style.top =
+        `${startY}px`;
+
+    fishingLine.style.height =
+        `${length}px`;
+
+    fishingLine.style.transform =
+        `rotate(${angle}rad)`;
+
+}
+
+
+/* =========================================================
+   MOUVEMENT DES POISSONS
+========================================================= */
+
+function updateFishPositions() {
+
+    const time =
+        performance.now() / 1000;
+
+
+    fishes.forEach(
+        function(fish, index) {
+
+            /*
+             * Un poisson attrapé ne bouge plus.
+             */
+
+            if (
+                fish.classList.contains("caught")
+            ) {
+
+                return;
+
+            }
+
+
+            const baseX =
+                parseFloat(
+                    fish.dataset.x
+                );
+
+            const baseY =
+                parseFloat(
+                    fish.dataset.y
+                );
+
+
+            /*
+             * Vitesse selon la rareté.
+             */
+
+            let speed = 0.7;
+
+
+            if (
+                fish.classList.contains("rare")
+            ) {
+
+                speed = 1.15;
+
+            }
+
+
+            if (
+                fish.classList.contains("galactic")
+            ) {
+
+                speed = 1.7;
+
+            }
+
+
+            /*
+             * Mouvement horizontal.
+             */
+
+            let horizontalMove =
+                Math.sin(
+                    time *
+                    speed +
+                    index
+                ) * 3;
+
+
+            /*
+             * Mouvement supplémentaire
+             * pour les galactiques.
+             */
+
+            if (
+                fish.classList.contains("galactic")
+            ) {
+
+                horizontalMove +=
+                    Math.sin(
+                        time *
+                        2.4 +
+                        index
+                    ) * 2;
+
+            }
+
+
+            /*
+             * Petit mouvement vertical.
+             */
+
+            const verticalMove =
+                Math.sin(
+                    time *
+                    1.2 +
+                    index *
+                    1.7
+                ) * 1.5;
+
+
+            /*
+             * Position.
+             */
+
+            fish.style.left =
+                `${baseX + horizontalMove}%`;
+
+            fish.style.top =
+                `${baseY + verticalMove}%`;
+
+
+            /*
+             * Direction du poisson.
+             */
+
+            const direction =
+                Math.cos(
+                    time *
+                    speed +
+                    index
+                ) >= 0
+                    ? 1
+                    : -1;
+
+
+            fish.style.transform =
+                `translate(-50%, -50%) scaleX(${direction})`;
+
+        }
+    );
+}
+
+
+/* =========================================================
+   COLLISIONS
+========================================================= */
+
+function checkCollisions() {
+
+    if (!gameRunning) {
+
+        return;
+
+    }
+
+
+    const hookX =
+        mouseX;
+
+    const hookY =
+        mouseY;
+
+
+    fishes.forEach(
+        function(fish) {
+
+            if (
+                fish.classList.contains("caught")
+            ) {
+
+                return;
+
+            }
+
+
+            const rect =
+                fish.getBoundingClientRect();
+
+
+            /*
+             * Centre du poisson.
+             */
+
+            const fishX =
+                rect.left +
+                rect.width / 2;
+
+            const fishY =
+                rect.top +
+                rect.height / 2;
+
+
+            const dx =
+                hookX -
+                fishX;
+
+            const dy =
+                hookY -
+                fishY;
+
+
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
+
+
+            /*
+             * Zone de capture.
+             */
+
+            if (distance < 42) {
+
+                catchFish(fish);
+
+            }
+
+        }
+    );
+}
+
+
+/* =========================================================
+   ATTRAPER UN POISSON
+========================================================= */
+
+function catchFish(fish) {
+
+    if (!gameRunning) {
+
+        return;
+
+    }
+
+
+    let points = 1;
+
+
+    if (
+        fish.classList.contains("rare")
+    ) {
+
+        points = 2;
+
+    }
+
+
+    if (
+        fish.classList.contains("galactic")
+    ) {
+
+        points = 5;
+
+    }
+
+
+    /*
+     * Ajout des points.
+     */
+
+    score += points;
+
+
+    scoreElement.textContent =
+        `Poissons : ${score}`;
+
+
+    /*
+     * Marque le poisson comme attrapé.
+     */
+
+    fish.classList.add("caught");
+
+
+    /*
+     * Création des bulles.
+     */
+
+    const rect =
+        fish.getBoundingClientRect();
+
+
+    for (
+        let i = 0;
+        i < 3;
+        i++
+    ) {
+
+        const bubble =
+            document.createElement("div");
+
+
+        bubble.className =
+            "bubble";
+
+
+        bubble.style.left =
+            `${rect.left +
+            Math.random() *
+            rect.width}px`;
+
+
+        bubble.style.top =
+            `${rect.top +
+            Math.random() *
+            rect.height}px`;
+
+
+        game.appendChild(
+            bubble
+        );
+
+
+        setTimeout(
+            function() {
+
+                bubble.remove();
+
+            },
+            2000
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DÉFILEMENT DE L'IMAGE
+========================================================= */
+
+function updateWater() {
+
+    if (!gameRunning) {
+
+        return;
+
+    }
+
+
+    const elapsed =
+        performance.now() -
+        startTime;
+
+
+    const progress =
+        Math.min(
+            elapsed / 20000,
+            1
+        );
+
+
+    /*
+     * Déplacement :
+     *
+     * début = bas de l'image
+     * fin   = haut de l'image
+     */
+
+    waterY =
+        -maxScroll +
+        maxScroll *
+        progress;
+
+
+    water.style.transform =
+        `translateY(${waterY}px)`;
+
+
+    /*
+     * Temps restant.
+     */
+
+    timeLeft =
+        Math.max(
+            0,
+            Math.ceil(
+                20 -
+                elapsed / 1000
+            )
+        );
+
+
+    timerElement.textContent =
+        timeLeft;
+
+
+    /*
+     * Fin des 20 secondes.
+     */
+
+    if (elapsed >= 20000) {
+
+        finishGame();
+
+    }
+
+}
+
+
+/* =========================================================
+   FIN DE LA PARTIE
+========================================================= */
+
+function finishGame() {
+
+    if (!gameRunning) {
+
+        return;
+
+    }
+
+
+    gameRunning =
+        false;
+
+
+    timeLeft = 0;
+
+
+    timerElement.textContent =
+        "0";
+
+
+    finalScore.textContent =
+        `Poissons attrapés : ${score}`;
+
+
+    endScreen.style.display =
+        "flex";
+
+}
+
+
+/* =========================================================
+   RÉINITIALISATION DES POISSONS
+========================================================= */
+
+function resetFish() {
+
+    fishes.forEach(
+        function(fish) {
+
+            fish.classList.remove(
+                "caught"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   DÉCOMPTE
+========================================================= */
+
+function showCountdown() {
+
+    countdownScreen.style.display =
+        "flex";
+
+
+    const sequence = [
+        "3",
+        "2",
+        "1",
+        "GO!"
+    ];
+
+
+    let index = 0;
+
+
+    function showNext() {
+
+        countdown.textContent =
+            sequence[index];
+
+
+        /*
+         * Redémarrage propre
+         * de l'animation CSS.
+         */
+
+        countdown.classList.remove(
+            "countdownAnimate"
+        );
+
+
+        void countdown.offsetWidth;
+
+
+        countdown.classList.add(
+            "countdownAnimate"
+        );
+
+
+        index++;
+
+
+        if (
+            index <
+            sequence.length
+        ) {
+
+            setTimeout(
+                showNext,
+                1000
+            );
+
+        }
+
+        else {
+
+            /*
+             * GO! reste affiché pendant
+             * une seconde avant le départ.
+             */
+
+            setTimeout(
+                function() {
+
+                    countdownScreen.style.display =
+                        "none";
+
+                    startGame();
+
+                },
+                1000
+            );
+
+        }
+
+    }
+
+
+    showNext();
+
+}
+
+
+/* =========================================================
+   DÉBUT D'UNE PARTIE
+========================================================= */
+
+function startGame() {
+
+    /*
+     * Réinitialisation complète.
+     */
+
+    score = 0;
+
+    timeLeft = 20;
+
+    gameRunning = true;
+
+    gameStarted = true;
+
+
+    /*
+     * Interface.
+     */
+
+    scoreElement.textContent =
+        "Poissons : 0";
+
+    timerElement.textContent =
+        "20";
+
+
+    /*
+     * Écran de fin.
+     */
+
+    endScreen.style.display =
+        "none";
+
+
+    /*
+     * Poissons.
+     */
+
+    resetFish();
+
+
+    /*
+     * Calcul de la position
+     * initiale de l'image.
+     */
+
+    calculateScroll();
+
+
+    waterY =
+        -maxScroll;
+
+
+    water.style.transform =
+        `translateY(${waterY}px)`;
+
+
+    /*
+     * Le chronomètre commence
+     * exactement maintenant.
+     */
+
+    startTime =
+        performance.now();
+
+}
+
+
+/* =========================================================
+   BOUTON COMMENCER
+========================================================= */
+
+startButton.addEventListener(
+    "click",
+    function() {
+
+        /*
+         * Empêche les doubles clics.
+         */
+
+        startButton.disabled =
+            true;
+
+
+        /*
+         * Cache l'écran d'accueil.
+         */
+
+        startScreen.style.display =
+            "none";
+
+
+        /*
+         * Prépare la transition.
+         */
+
+        transitionScreen.style.display =
+            "block";
+
+
+        transitionScreen.classList.remove(
+            "play"
+        );
+
+
+        /*
+         * Force le navigateur à
+         * recalculer l'animation.
+         */
+
+        void transitionScreen.offsetWidth;
+
+
+        /*
+         * Lance la transition.
+         */
+
+        transitionScreen.classList.add(
+            "play"
+        );
+
+
+        /*
+         * 3 secondes au total :
+         *
+         * 0 → 1 s : arrivée
+         * 1 → 2 s : pause
+         * 2 → 3 s : départ
+         */
+
+        setTimeout(
+            function() {
+
+                transitionScreen.style.display =
+                    "none";
+
+
+                transitionScreen.classList.remove(
+                    "play"
+                );
+
+
+                /*
+                 * Ensuite seulement,
+                 * le décompte commence.
+                 */
+
+                showCountdown();
+
+            },
+            3000
+        );
+
+    }
+);
+
+
+/* =========================================================
+   BOUTON REJOUER
+========================================================= */
+
+restartButton.addEventListener(
+    "click",
+    function() {
+
+        /*
+         * Retour à l'écran d'accueil
+         * plutôt que de recommencer
+         * immédiatement.
+         */
+
+        gameRunning =
+            false;
+
+
+        gameStarted =
+            false;
+
+
+        endScreen.style.display =
+            "none";
+
+
+        startButton.disabled =
+            false;
+
+
+        startScreen.style.display =
+            "flex";
+
+
+        /*
+         * Réinitialisation visuelle.
+         */
+
+        score = 0;
+
+        timeLeft = 20;
+
+
+        scoreElement.textContent =
+            "Poissons : 0";
+
+        timerElement.textContent =
+            "20";
+
+
+        resetFish();
+
+
+        calculateScroll();
+
+
+        waterY =
+            -maxScroll;
+
+
+        water.style.transform =
+            `translateY(${waterY}px)`;
+
+    }
+);
+
+
+/* =========================================================
+   BOUCLE PRINCIPALE
+========================================================= */
+
+function gameLoop() {
+
+    updateHook();
+
+    updateFishPositions();
+
+    updateWater();
+
+    checkCollisions();
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+
+/* =========================================================
+   INITIALISATION
+========================================================= */
+
+calculateScroll();
+
+
+if (maxScroll > 0) {
+
+    waterY =
+        -maxScroll;
+
+    water.style.transform =
+        `translateY(${waterY}px)`;
+
+}
+
+
+updateHook();
+
+
+requestAnimationFrame(
+    gameLoop
+);
+
+</script>
+
+</body>
+</html>
