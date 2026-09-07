@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Carrousel + Objets spéciaux</title>
+
+<style>
+
+/* =========================================
+   BASE
+========================================= */
+
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+
+  width:100%;
+  min-height:100%;
+
+  background:transparent;
+
+  font-family:Arial,sans-serif;
+}
+
+
+/* =========================================
+   CARROUSEL
+========================================= */
+
+.image-scroll-wrapper{
+  width:100%;
+
+  overflow:hidden;
+
+  padding:20px 10px;
+
+  cursor:grab;
+
+  user-select:none;
+  -webkit-user-select:none;
+
+  touch-action:none;
+}
+
+.image-scroll-wrapper.dragging{
+  cursor:grabbing;
+}
+
+
+/* =========================================
+   BANDEAU
+========================================= */
+
+.image-scroll{
+  display:flex;
+
+  align-items:center;
+
+  gap:80px;
+
+  width:max-content;
+
+  will-change:transform;
+}
+
+
+/* =========================================
+   FICHES DU CARROUSEL
+========================================= */
+
+.image-card{
+  position:relative;
+
+  width:640px;
+
+  flex-shrink:0;
+}
+
+.image-card img{
+  width:100%;
+  height:auto;
+
+  display:block;
+
+  border-radius:0;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.45);
+
+  user-select:none;
+  -webkit-user-drag:none;
+
+  pointer-events:none;
+}
+
+
+/* =========================================
+   ZONE CLIQUABLE
+   TOUTE LA FICHE
+========================================= */
+
+.click-zone{
+  position:absolute;
+
+  left:0;
+  top:0;
+
+  width:100%;
+  height:100%;
+
+  display:block;
+
+  background:transparent;
+
+  cursor:pointer;
+
+  z-index:10;
+
+  touch-action:auto;
+}
+
+
+/* =========================================
+   SECTION OBJETS SPÉCIAUX
+========================================= */
+
+#specialObjects{
+
+  display:none;
+
+  width:100%;
+
+  padding:20px 0 40px;
+
+  background:#000000;
+
+  overflow:hidden;
+}
+
+
+/* =========================================
+   CONTENEUR DES FICHES
+========================================= */
+
+.cards-container{
+
+  width:1330px;
+
+  max-width:100%;
+
+  display:flex;
+
+  flex-direction:row;
+
+  justify-content:center;
+
+  align-items:center;
+
+  gap:10px;
+
+  margin:0 auto;
+
+  background:#000000;
+}
+
+
+/* =========================================
+   FICHE
+========================================= */
+
+.card{
+
+  position:relative;
+
+  width:157px;
+
+  aspect-ratio:10.947 / 20;
+
+  flex-shrink:0;
+
+  perspective:1000px;
+
+  opacity:0;
+
+  transform:
+    translateY(30px)
+    scale(0.75);
+
+}
+
+
+/* =========================================
+   FICHE APPARUE
+========================================= */
+
+.card.card-visible{
+
+  animation:
+    cardPop
+    0.7s
+    cubic-bezier(0.2,0.9,0.25,1.2)
+    forwards;
+
+}
+
+
+/* =========================================
+   ANIMATION POP
+========================================= */
+
+@keyframes cardPop{
+
+  0%{
+
+    opacity:0;
+
+    transform:
+      translateY(30px)
+      scale(0.75);
+
+  }
+
+  45%{
+
+    opacity:1;
+
+    transform:
+      translateY(-8px)
+      scale(1.08);
+
+  }
+
+  70%{
+
+    transform:
+      translateY(3px)
+      scale(0.98);
+
+  }
+
+  100%{
+
+    opacity:1;
+
+    transform:
+      translateY(0)
+      scale(1);
+
+  }
+
+}
+
+
+/* =========================================
+   ONDE BLANCHE
+========================================= */
+
+.card::before{
+
+  content:"";
+
+  position:absolute;
+
+  left:50%;
+  top:50%;
+
+  width:30px;
+  height:30px;
+
+  border-radius:50%;
+
+  border:3px solid rgba(255,255,255,0.95);
+
+  box-shadow:
+    0 0 8px rgba(255,255,255,0.95),
+    0 0 18px rgba(255,255,255,0.7);
+
+  transform:
+    translate(-50%,-50%)
+    scale(0);
+
+  opacity:0;
+
+  pointer-events:none;
+
+  z-index:20;
+
+}
+
+
+/* =========================================
+   ANIMATION DE L'ONDE
+========================================= */
+
+.card.card-visible::before{
+
+  animation:
+    waterWave
+    0.85s
+    ease-out
+    forwards;
+
+}
+
+
+@keyframes waterWave{
+
+  0%{
+
+    width:25px;
+    height:25px;
+
+    opacity:0.95;
+
+    border-width:4px;
+
+    transform:
+      translate(-50%,-50%)
+      scale(0);
+
+  }
+
+  35%{
+
+    opacity:0.9;
+
+  }
+
+  70%{
+
+    opacity:0.45;
+
+  }
+
+  100%{
+
+    width:300px;
+    height:300px;
+
+    opacity:0;
+
+    border-width:1px;
+
+    transform:
+      translate(-50%,-50%)
+      scale(1);
+
+  }
+
+}
+
+
+/* =========================================
+   DEUXIÈME PETITE ONDE
+========================================= */
+
+.card.card-visible::after{
+
+  content:"";
+
+  position:absolute;
+
+  left:50%;
+  top:50%;
+
+  width:20px;
+  height:20px;
+
+  border-radius:50%;
+
+  border:2px solid rgba(255,255,255,0.7);
+
+  transform:
+    translate(-50%,-50%)
+    scale(0);
+
+  opacity:0;
+
+  pointer-events:none;
+
+  z-index:19;
+
+  animation:
+    waterWaveSmall
+    0.9s
+    0.15s
+    ease-out
+    forwards;
+
+}
+
+
+@keyframes waterWaveSmall{
+
+  0%{
+
+    width:20px;
+    height:20px;
+
+    opacity:0.8;
+
+    transform:
+      translate(-50%,-50%)
+      scale(0);
+
+  }
+
+  100%{
+
+    width:230px;
+    height:230px;
+
+    opacity:0;
+
+    transform:
+      translate(-50%,-50%)
+      scale(1);
+
+  }
+
+}
+
+
+/* =========================================
+   ÉLÉMENT QUI PIVOTE
+========================================= */
+
+.card-inner{
+
+  position:relative;
+
+  width:100%;
+  height:100%;
+
+  transition:
+    transform 0.45s ease;
+
+  transform-style:preserve-3d;
+
+}
+
+
+/* =========================================
+   ROTATION AU SURVOL
+========================================= */
+
+.card:hover .card-inner{
+
+  transform:
+    rotateY(180deg);
+
+}
+
+
+/* =========================================
+   RECTO ET VERSO
+========================================= */
+
+.card-front,
+.card-back{
+
+  position:absolute;
+
+  width:100%;
+  height:100%;
+
+  top:0;
+  left:0;
+
+  overflow:hidden;
+
+  border-radius:10px;
+
+  backface-visibility:hidden;
+
+  -webkit-backface-visibility:hidden;
+
+  box-shadow:
+    0 5px 12px rgba(255,255,255,0.15);
+
+}
+
+
+/* =========================================
+   RECTO
+========================================= */
+
+.card-front{
+
+  background:#000000;
+
+}
+
+
+/* =========================================
+   VERSO
+========================================= */
+
+.card-back{
+
+  background:#000000;
+
+  transform:
+    rotateY(180deg);
+
+}
+
+
+/* =========================================
+   IMAGES
+========================================= */
+
+.card-front img,
+.card-back img{
+
+  width:100%;
+  height:100%;
+
+  display:block;
+
+  object-fit:cover;
+
+}
+
+
+/* =========================================
+   PETITS ÉCRANS
+========================================= */
+
+@media(max-width:1330px){
+
+  .cards-container{
+
+    overflow-x:auto;
+
+    justify-content:flex-start;
+
+    padding-left:10px;
+
+    padding-right:10px;
+
+    background:#000000;
+
+  }
+
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media(max-width:700px){
+
+  .image-scroll{
+
+    gap:40px;
+
+  }
+
+  .image-card{
+
+    width:520px;
+
+  }
+
+}
+
+
+/* =========================================
+   FIN CSS
+========================================= */
+
+</style>
+
+</head>
+
+<body>
+
+<!-- =========================================
+     CARROUSEL PRINCIPAL
+========================================= -->
+
+<div
+  class="image-scroll-wrapper"
+  id="scrollWrapper"
+>
+
+  <div
+    class="image-scroll"
+    id="imageTrack"
+  >
+
+```
+<!-- =====================================
+     PREMIÈRE COUPE
+====================================== -->
+
+<div class="image-card">
+
+  <img
+    src="https://arnaudlebest-13.webself.net/file/si1765567/1-fi36704054x990.png"
+    alt=""
+  >
+
+  <a
+    class="click-zone"
+    href="https://sites.google.com/cssmi.qc.ca/coupe-alternative-2024-2025/accueil"
+    target="_blank"
+    aria-label="Première coupe"
+  ></a>
+
+</div>
+
+
+<!-- =====================================
+     DEUXIÈME COUPE
+====================================== -->
+
+<div class="image-card">
+
+  <img
+    src="https://arnaudlebest-13.webself.net/file/si1765567/2-fi36704053x990.png"
+    alt=""
+  >
+
+  <a
+    class="click-zone"
+    href="https://sites.google.com/cssmi.qc.ca/coupe-alternative2025-2026/accueil"
+    target="_blank"
+    aria-label="Deuxième coupe"
+  ></a>
+
+</div>
+
+
+<!-- =====================================
+     CIRCUIT
+====================================== -->
+
+<div class="image-card">
+
+  <img
+    src="https://arnaudlebest-13.webself.net/file/si1765567/3-fi36704057x990.png"
+    alt=""
+  >
+
+  <a
+    class="click-zone"
+    href="https://sites.google.com/cssmi.qc.ca/coupe-alternative-2026-2027/accueil/circuit"
+    target="_blank"
+    aria-label="Circuit"
+  ></a>
+
+</div>
+
+
+<!-- =====================================
+     PILOTES
+====================================== -->
+
+<div class="image-card">
+
+  <img
+    src="https://arnaudlebest-13.webself.net/file/si1765567/4-fi36704058x990.png"
+    alt=""
+  >
+
+  <a
+    class="click-zone"
+    href="https://sites.google.com/cssmi.qc.ca/coupe-alternative-2026-2027/accueil/pilotes"
+    target="_blank"
+    aria-label="Pilotes"
+  ></a>
+
+</div>
+
+
+<!-- =====================================
+     MESSAGES GF
+====================================== -->
+
+<div class="image-card">
+
+  <img
+    src="https://arnaudlebest-13.webself.net/file/si1765567/6-fi36704060x990.png"
+    alt=""
+  >
+
+  <a
+    class="click-zone"
+    href="https://docs.google.com/document/d/1vT6t5cPNBmiP9VKIYJpeBX6Vyjpj8mTelf-L2Z9aDNw/edit?tab=t.0"
+    target="_blank"
+    aria-label="MESSAGES GF"
+  ></a>
+
+</div>
+
+
+<!-- =====================================
+     EXPLICATIONS
+====================================== -->
+
+<div class="image-card">
+
+  <img
+    src="https://arnaudlebest-13.webself.net/file/si1765567/5-fi36704055x990.png"
+    alt=""
+  >
+
+  <a
+    class="click-zone"
+    href="https://docs.google.com/document/d/10YrdCYNNkMFjcXb8nsN_QBG2JyrFj1DOxlzHYQwYXlk/edit?usp=drive_link"
+    target="_blank"
+    aria-label="EXPLICATIONS"
+  ></a>
+
+</div>
+
+
+<!-- =====================================
+     MESSAGE DE MARIO
+====================================== -->
+
+<div class="image-card">
+
+  <img
+    src="https://arnaudlebest-13.webself.net/file/si1765567/8-fi36704059x990.png"
+    alt="Message de Mario"
+  >
+
+  <a
+    class="click-zone"
+    href="https://sites.google.com/cssmi.qc.ca/coupe-alternative-2026-2027/accueil/message-de-mario"
+    target="_blank"
+    aria-label="Message de Mario"
+  ></a>
+
+</div>
+
+
+<!-- =====================================
+     OBJETS SPÉCIAUX
+====================================== -->
+
+<div class="image-card">
+
+  <img
+    src="https://arnaudlebest-13.webself.net/file/si1765567/7-fi36704056x990.png"
+    alt=""
+  >
+
+  <a
+    class="click-zone special-objects-button"
+    href="#"
+    aria-label="Objets spéciaux"
+  ></a>
+
+</div>
+```
+
+  </div>
+
+</div>
+
+<!-- =========================================
+     FICHES OBJETS SPÉCIAUX
+========================================= -->
+
+<div id="specialObjects">
+
+  <div class="cards-container">
+
+```
+<!-- =====================================
+     FICHE 1 (Banane + Carapace Verte)
+====================================== -->
+
+<div class="card">
+
+  <div class="card-inner">
+
+    <div class="card-front">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/1-Banane.png?raw=true"
+        alt="Objet spécial 1"
+      >
+
+    </div>
+
+    <div class="card-back">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/1-Carapace.png?raw=true"
+        alt="Objet spécial 1 verso"
+      >
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     FICHE 2 (Carapace bleue + rouge)
+====================================== -->
+
+<div class="card">
+
+  <div class="card-inner">
+
+    <div class="card-front">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/2-Carapace%20bleu.png?raw=true"
+        alt="Objet spécial 2"
+      >
+
+    </div>
+
+    <div class="card-back">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/2-Carapace.png?raw=true"
+        alt="Objet spécial 2 verso"
+      >
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     FICHE 3 (Bombe + plante carnivore)
+====================================== -->
+
+<div class="card">
+
+  <div class="card-inner">
+
+    <div class="card-front">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/3-Bombe.png?raw=true"
+        alt="Objet spécial 3"
+      >
+
+    </div>
+
+    <div class="card-back">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/3-Plante.png?raw=true"
+        alt="Objet spécial 3 verso"
+      >
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     FICHE 4 (Champignon doré + champignon)
+====================================== -->
+
+<div class="card">
+
+  <div class="card-inner">
+
+    <div class="card-front">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4-Champignon%20dor%C3%A9.png?raw=true"
+        alt="Objet spécial 4"
+      >
+
+    </div>
+
+    <div class="card-back">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/4-Champignon.png?raw=true"
+        alt="Objet spécial 4 verso"
+      >
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     FICHE 5 (Boo + canon)
+====================================== -->
+
+<div class="card">
+
+  <div class="card-inner">
+
+    <div class="card-front">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/5-Boo.png?raw=true"
+        alt="Objet spécial 5"
+      >
+
+    </div>
+
+    <div class="card-back">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/5-Canon.png?raw=true"
+        alt="Objet spécial 5 verso"
+      >
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     FICHE 6 (Huit + Éclair)
+====================================== -->
+
+<div class="card">
+
+  <div class="card-inner">
+
+    <div class="card-front">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/6-Huit.png?raw=true"
+        alt="Objet spécial 6"
+      >
+
+    </div>
+
+    <div class="card-back">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/6-%C3%89claire.png?raw=true"
+        alt="Objet spécial 6 verso"
+      >
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     FICHE 7 (Fleur + étoile)
+====================================== -->
+
+<div class="card">
+
+  <div class="card-inner">
+
+    <div class="card-front">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/7-Fleur.png?raw=true"
+        alt="Objet spécial 7"
+      >
+
+    </div>
+
+    <div class="card-back">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/7-%C3%89toile.png?raw=true"
+        alt="Objet spécial 7 verso"
+      >
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     FICHE 8 (Piranha + pièce)
+====================================== -->
+
+<div class="card">
+
+  <div class="card-inner">
+
+    <div class="card-front">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/8-Piranha.png?raw=true"
+        alt="Objet spécial 8"
+      >
+
+    </div>
+
+    <div class="card-back">
+
+      <img
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/8-Pi%C3%A8ce.png?raw=true"
+        alt="Objet spécial 8 verso"
+      >
+
+    </div>
+
+  </div>
+
+</div>
+```
+
+  </div>
+
+</div>
+
+<script>
+
+/* =========================================
+   ÉLÉMENTS
+========================================= */
+
+const wrapper =
+  document.getElementById("scrollWrapper");
+
+const track =
+  document.getElementById("imageTrack");
+
+const specialObjects =
+  document.getElementById("specialObjects");
+
+const cards =
+  document.querySelectorAll(
+    "#specialObjects .card"
+  );
+
+
+/* =========================================
+   DUPLICATION DU CARROUSEL
+========================================= */
+
+track.innerHTML += track.innerHTML;
+
+
+/* =========================================
+   CLIC OBJETS SPÉCIAUX
+========================================= */
+
+track.addEventListener(
+  "click",
+  function(event){
+
+    const button =
+      event.target.closest(
+        ".special-objects-button"
+      );
+
+    if(!button){
+
+      return;
+
+    }
+
+    event.preventDefault();
+
+
+    /* -------------------------------------
+       Affiche la section
+    ------------------------------------- */
+
+    specialObjects.style.display =
+      "block";
+
+
+    /* -------------------------------------
+       Remet toutes les fiches à leur
+       état initial
+    ------------------------------------- */
+
+    cards.forEach(function(card){
+
+      card.classList.remove(
+        "card-visible"
+      );
+
+    });
+
+
+    /* -------------------------------------
+       Apparition une par une
+    ------------------------------------- */
+
+    cards.forEach(function(card,index){
+
+      setTimeout(
+        function(){
+
+          card.classList.add(
+            "card-visible"
+          );
+
+        },
+
+        index * 250
+
+      );
+
+    });
+
+  }
+);
+
+
+/* =========================================
+   VARIABLES DU CARROUSEL
+========================================= */
+
+let position = 0;
+
+const speed = 1.5;
+
+let animationFrame = null;
+
+let isDragging = false;
+
+let startX = 0;
+
+let startPosition = 0;
+
+
+/* =========================================
+   LARGEUR D'UNE BOUCLE
+========================================= */
+
+function getLoopWidth(){
+
+  return track.scrollWidth / 2;
+
+}
+
+
+/* =========================================
+   NORMALISATION
+========================================= */
+
+function normalizePosition(){
+
+  const width =
+    getLoopWidth();
+
+  while(position <= -width){
+
+    position += width;
+
+  }
+
+  while(position > 0){
+
+    position -= width;
+
+  }
+
+}
+
+
+/* =========================================
+   AFFICHAGE
+========================================= */
+
+function render(){
+
+  track.style.transform =
+    `translate3d(${position}px,0,0)`;
+
+}
+
+
+/* =========================================
+   AUTO-DÉFILEMENT
+========================================= */
+
+function autoScroll(){
+
+  if(!isDragging){
+
+    position -= speed;
+
+    normalizePosition();
+
+    render();
+
+  }
+
+  animationFrame =
+    requestAnimationFrame(autoScroll);
+
+}
+
+
+/* =========================================
+   DÉBUT DU GLISSEMENT
+========================================= */
+
+function startDrag(x){
+
+  isDragging = true;
+
+  startX = x;
+
+  startPosition = position;
+
+  wrapper.classList.add("dragging");
+
+}
+
+
+/* =========================================
+   DÉPLACEMENT
+========================================= */
+
+function moveDrag(x){
+
+  if(!isDragging){
+
+    return;
+
+  }
+
+  const movement =
+    x - startX;
+
+  position =
+    startPosition + movement;
+
+  normalizePosition();
+
+  render();
+
+}
+
+
+/* =========================================
+   FIN DU GLISSEMENT
+========================================= */
+
+function stopDrag(){
+
+  if(!isDragging){
+
+    return;
+
+  }
+
+  isDragging = false;
+
+  wrapper.classList.remove("dragging");
+
+}
+
+
+/* =========================================
+   SOURIS
+========================================= */
+
+wrapper.addEventListener(
+  "mousedown",
+  function(event){
+
+    if(
+      event.target.closest(".click-zone")
+    ){
+
+      return;
+
+    }
+
+    startDrag(
+      event.clientX
+    );
+
+    event.preventDefault();
+
+  }
+);
+
+
+window.addEventListener(
+  "mousemove",
+  function(event){
+
+    if(!isDragging){
+
+      return;
+
+    }
+
+    moveDrag(
+      event.clientX
+    );
+
+  }
+);
+
+
+window.addEventListener(
+  "mouseup",
+  function(){
+
+    stopDrag();
+
+  }
+);
+
+
+/* =========================================
+   TACTILE
+========================================= */
+
+wrapper.addEventListener(
+  "touchstart",
+  function(event){
+
+    if(
+      event.touches.length !== 1
+    ){
+
+      return;
+
+    }
+
+    if(
+      event.target.closest(".click-zone")
+    ){
+
+      return;
+
+    }
+
+    startDrag(
+      event.touches[0].clientX
+    );
+
+  },
+  {passive:true}
+);
+
+
+wrapper.addEventListener(
+  "touchmove",
+  function(event){
+
+    if(!isDragging){
+
+      return;
+
+    }
+
+    if(
+      event.touches.length !== 1
+    ){
+
+      return;
+
+    }
+
+    moveDrag(
+      event.touches[0].clientX
+    );
+
+  },
+  {passive:true}
+);
+
+
+wrapper.addEventListener(
+  "touchend",
+  function(){
+
+    stopDrag();
+
+  },
+  {passive:true}
+);
+
+
+wrapper.addEventListener(
+  "touchcancel",
+  function(){
+
+    stopDrag();
+
+  },
+  {passive:true}
+);
+
+
+/* =========================================
+   EMPÊCHE LE DRAG NATIF
+========================================= */
+
+wrapper.addEventListener(
+  "dragstart",
+  function(event){
+
+    event.preventDefault();
+
+  }
+);
+
+
+/* =========================================
+   DÉMARRAGE
+========================================= */
+
+render();
+
+autoScroll();
+
+</script>
+
+</body>
+</html>
