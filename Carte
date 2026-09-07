@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Coupe Alternative 2026-2027</title>
+
+<style>
+
+/* =========================================================
+   BASE
+========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+}
+
+
+/* =========================================================
+   CARTE
+========================================================= */
+
+#map {
+
+    position: relative;
+
+    width: 100vw;
+    height: 100vh;
+
+    background-image:
+        url("https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/Carte%2010.1%20Mini-COGE.png?raw=true");
+
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    perspective: 1000px;
+
+    overflow: hidden;
+}
+
+
+#map::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle,
+            transparent 45%,
+            rgba(0,0,0,.35)
+        );
+
+    pointer-events: none;
+
+    z-index: 1;
+}
+
+
+/* =========================================================
+   ZONES CLIQUABLES
+========================================================= */
+
+:root {
+
+    /*
+       MODIFIER ICI L'OPACITÉ DES POLYGONES
+
+       0    = invisible
+       0.25 = légèrement transparent
+       0.45 = rouge visible avec la carte derrière
+       0.75 = très rouge
+       1    = rouge complètement opaque
+    */
+
+    --OPACITE_ZONES: 0;
+}
+
+
+.zone-cliquable {
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background:
+        rgba(
+            255,
+            0,
+            0,
+            var(--OPACITE_ZONES)
+        );
+
+    border:
+        3px solid
+        rgba(
+            255,
+            0,
+            0,
+            var(--OPACITE_ZONES)
+        );
+
+    cursor: pointer;
+
+    z-index: 2;
+}
+
+
+/* =========================================================
+   POLYGONE 1 — TRAITE MEUH-MEUH
+========================================================= */
+
+#zoneMeuh {
+
+    clip-path: polygon(
+
+        35.24% 63.52%,
+        44.58% 51.99%,
+        51.68% 66.42%,
+        44.58% 71.22%
+
+    );
+}
+
+
+/* =========================================================
+   POLYGONE 2 — PÊCHE AQUAZO
+========================================================= */
+
+#zoneAquazo {
+
+    clip-path: polygon(
+
+        65.78% 65.47%,
+        77.53% 54.93%,
+        84.57% 65.47%,
+        87% 75%,
+        77.53% 71.22%
+
+    );
+}
+
+
+/* =========================================================
+   POLYGONE 3 — DÉSERT DODO
+
+   Coordonnées cartésiennes :
+
+   (17,20)
+   (18,24)
+   (23,26.5)
+   (28,24)
+   (24,19)
+
+   Dimensions :
+   largeur  = 59.16
+   hauteur  = 28.99
+
+   Origine :
+   (0,0) = bas gauche
+========================================================= */
+
+#zoneDesertDodo {
+
+    clip-path: polygon(
+
+        28.74% 31.05%,
+        30.43% 17.21%,
+        38.88% 8.62%,
+        47.33% 17.21%,
+        40.57% 34.46%
+
+    );
+}
+
+
+/* =========================================================
+   POLYGONE 4 — BOWSER NINJA
+
+   Coordonnées cartésiennes :
+
+   (45,22)
+   (50.5,26)
+   (57,20)
+   (52,17)
+========================================================= */
+
+#zoneBowserNinja {
+
+    clip-path: polygon(
+
+        76.06% 24.11%,
+        85.36% 10.38%,
+        96.35% 31.05%,
+        87.90% 41.36%
+
+    );
+}
+
+
+/* =========================================================
+   ÉQUIPES / PILOTES
+========================================================= */
+
+.team {
+
+    position: absolute;
+
+    transform:
+        translate(-50%, -50%);
+
+    width: 48px;
+    height: 48px;
+
+    cursor: pointer;
+
+    z-index: 5;
+}
+
+
+/* =========================================================
+   PRIORITÉ AU SURVOL
+========================================================= */
+
+.team:hover {
+
+    z-index: 2147483647 !important;
+
+}
+
+
+.team:hover .team-info {
+
+    z-index: 2147483647 !important;
+
+}
+
+
+/* =========================================================
+   BADGE
+========================================================= */
+
+.badge {
+
+    width: 48px;
+    height: 48px;
+
+    object-fit: contain;
+
+    display: block;
+
+    border-radius: 50%;
+
+    border: 2px solid black;
+
+    background: white;
+}
+
+
+/* =========================================================
+   BADGE SPÉCIAL — 3 ÉQUIPES OU PLUS
+========================================================= */
+
+.team.multiple-position .badge {
+
+    background: white;
+
+    border-radius: 50%;
+
+    object-fit: contain;
+
+    padding: 0;
+}
+
+
+/* =========================================================
+   FICHE AU SURVOL
+========================================================= */
+
+.team-info {
+
+    position: absolute;
+
+    left: 58px;
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    min-width: 155px;
+
+    padding: 8px 11px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255,255,255,.95);
+
+    border: 2px solid black;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.35);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    white-space: nowrap;
+
+    z-index: 2147483647;
+}
+
+
+.team:hover .team-info {
+
+    opacity: 1;
+
+    visibility: visible;
+
+}
+
+
+/* =========================================================
+   FICHE GROUPES
+========================================================= */
+
+.team.multiple-position .team-info {
+
+    display: block;
+
+    min-width: 190px;
+
+    white-space: normal;
+
+}
+
+
+/* =========================================================
+   NOMS DES JOUEURS
+========================================================= */
+
+.team-group-title {
+
+    font-size: 15px;
+
+    font-weight: 800;
+
+    margin-bottom: 6px;
+
+}
+
+
+.team-group-names {
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    line-height: 1.4;
+
+}
+
+
+.team-group-names div {
+
+    margin-bottom: 2px;
+
+}
+
+
+/* =========================================================
+   FICHE VERS LE BAS
+========================================================= */
+
+.team.info-down .team-info {
+
+    top: 58px;
+
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+}
+
+
+/* =========================================================
+   INFORMATIONS
+========================================================= */
+
+.team-name {
+
+    font-size: 15px;
+
+    font-weight: 800;
+
+    margin-bottom: 4px;
+}
+
+
+.team-rank {
+
+    font-size: 12px;
+
+    opacity: .75;
+}
+
+
+.team-score {
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+    margin-top: 2px;
+}
+
+
+.team-laps {
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    margin-top: 3px;
+}
+
+
+/* =========================================================
+   PODIUM
+========================================================= */
+
+.gold {
+
+    box-shadow:
+        0 0 0 2px gold,
+        0 0 12px gold;
+}
+
+
+.silver {
+
+    box-shadow:
+        0 0 0 2px silver,
+        0 0 12px silver;
+}
+
+
+.bronze {
+
+    box-shadow:
+        0 0 0 2px #cd7f32,
+        0 0 12px #cd7f32;
+}
+
+
+/* =========================================================
+   IMAGE CENTRALE
+========================================================= */
+
+.center-image {
+
+    position: absolute;
+
+    top: 46%;
+    left: 60%;
+
+    transform:
+        translate(-50%,-50%);
+
+    width: 140px;
+
+    z-index: 10;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   PLUIE DE PIÈCES
+   SEULE ANIMATION CONSERVÉE
+========================================================= */
+
+.coin-rain {
+
+    position: fixed;
+
+    width: 50px;
+    height: 50px;
+
+    pointer-events: none;
+
+    z-index: 9999;
+
+    animation:
+        coinFall 4.5s linear forwards;
+}
+
+
+@keyframes coinFall {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            translate(0,0)
+            rotate(0)
+            scale(1.5);
+    }
+
+    5% {
+
+        opacity: 1;
+    }
+
+    100% {
+
+        transform:
+            translate(var(--dx),var(--dy))
+            rotate(1440deg)
+            scale(2.5);
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     CARTE PRINCIPALE
+========================================================= -->
+
+<div id="map">
+
+
+    <!-- =====================================================
+         POLYGONE ROUGE — TRAITE MEUH-MEUH
+    ====================================================== -->
+
+    <div
+        id="zoneMeuh"
+        class="zone-cliquable"
+        title="Traite Meuh-Meuh">
+    </div>
+
+
+    <!-- =====================================================
+         POLYGONE ROUGE — PÊCHE AQUAZO
+    ====================================================== -->
+
+    <div
+        id="zoneAquazo"
+        class="zone-cliquable"
+        title="Pêche Aquazo">
+    </div>
+
+
+    <!-- =====================================================
+         POLYGONE ROUGE — DÉSERT DODO
+    ====================================================== -->
+
+    <div
+        id="zoneDesertDodo"
+        class="zone-cliquable"
+        title="Désert Dodo">
+    </div>
+
+
+    <!-- =====================================================
+         POLYGONE ROUGE — BOWSER NINJA
+    ====================================================== -->
+
+    <div
+        id="zoneBowserNinja"
+        class="zone-cliquable"
+        title="Bowser Ninja">
+    </div>
+
+
+    <!-- =====================================================
+         IMAGE CENTRALE
+    ====================================================== -->
+
+    <img
+        class="center-image"
+        id="centerImg"
+        src="https://drive.google.com/thumbnail?id=1XzAvtqCk-BwyP8wtRgVNRz1-lEhTnKLa&sz=w1000"
+        alt=""
+    >
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CONFIGURATION DE LA CARTE
+========================================================= */
+
+const LARGEUR_IMAGE = 15.9552;
+const HAUTEUR_IMAGE = 7.84161818;
+const DECALAGE_X = -0.8;
+
+
+/* =========================================================
+   GOOGLE SHEET
+========================================================= */
+
+const URL =
+    "https://opensheet.elk.sh/1ODW-isJvTPKS3uNkd7Jg_L5P4uLQhUily01gnK5QjKY/2026-2027";
+
+
+const map =
+    document.getElementById("map");
+
+
+const elCache =
+    new Map();
+
+
+/* =========================================================
+   PISTE
+========================================================= */
+
+const piste = [
+
+    [9.684193290449546,6.314563303680817],
+    [9.54158701347045,6.316003771125051],
+    [9.417706813266385,6.307360966459651],
+    [9.3,6.3],
+    [9.167065477969789,6.290075357128852],
+    [9.028780603323392,6.288634889684618],
+    [8.876091054234662,6.284313487351918],
+    [8.744646519720582,6.265485425143818],
+    [8.610768886852998,6.239739726515437],
+    [8.482040393711092,6.216568597749894],
+    [8.366184749883377,6.190822899121513],
+    [8.252903675918498,6.162502630630294],
+    [8.114170800977845,6.130068526264551],
+    [8.005573113623162,6.080172291534021],
+    [7.905780644162102,6.018535766278661],
+    [7.855884409431573,5.939288805236055],
+    [7.832403828381912,5.830691117881373],
+    [7.776637448388967,5.736768793682729],
+    [7.6621696157718695,5.669262123164954],
+    [7.51248091158028,5.622300961065632],
+    [7.377467570544729,5.628171106328047],
+    [7.2512594474028,5.631106178959254],
+    [7.017882066557133,5.667711606317302],
+    [6.825839431851684,5.698327098806576],
+    [6.6198806641965655,5.720592911526048],
+    [6.452887068800522,5.737292271065653],
+    [6.357590461378819,5.773965510488436],
+    [6.233345619877703,5.807097468222066],
+    [6.055261347059436,5.815380457655475],
+    [5.873035579524466,5.798814478788659],
+    [5.6949513067062,5.75739953162142],
+    [5.545857496904861,5.72426757388799],
+    [5.313933792769444,5.629013195403801],
+    [5.177264467118217,5.475777890885759],
+    [5.218007806883622,5.3636744622226855],
+    [5.355023740403249,5.29205249697379],
+    [5.526293657302783,5.257798513593883],
+    [5.691335577224152,5.220430531724894],
+    [5.837693506211026,5.1706065558995755],
+    [5.927999462394416,5.080300599716185],
+    [5.946683453328911,4.946398664685641],
+    [5.850149500167356,4.834294719078675],
+    [5.769187303645068,4.733892856599293],
+    [5.6962083957794345,4.6426692217672505],
+    [5.645123160273491,4.544147696148646],
+    [5.608633706340674,4.441977225136759],
+    [5.594037924767548,4.3142641363719],
+    [5.6,4.2],
+    [5.604984760947393,4.080731631201874],
+    [5.645123160273491,3.98585905097655],
+    [5.7071552319592795,3.861794907604973],
+    [5.765538358251787,3.763273381986368],
+    [5.798378866791322,3.653805020187918],
+    [5.820272539151011,3.5333898222096227],
+    [5.8,3.4],
+    [5.579442143194421,3.321750989399286],
+    [5.4480801090362805,3.267016808500061],
+    [5.320367020271422,3.2049847368142728],
+    [5.2181965492595355,3.146601610521766],
+    [5.101430296674522,3.0991653204091043],
+    [5.017504552629044,3.033484303330034],
+    [4.9700682625163815,2.931313832318147],
+    [4.951668949144556,2.8291433613062607],
+    [4.970434151144532,2.7426744572667907],
+    [5.026729757144461,2.626330204866937],
+    [5.124308807544339,2.5287511544670593],
+    [5.2744304235441515,2.461196427267144],
+    [5.432058120343954,2.3861356192672383],
+    [5.615957099943723,2.3598643364672713],
+    [5.814868241143474,2.303568730467342],
+    [5.991261139943253,2.3110748112673325],
+    [6.156394917543047,2.299815690067347],
+    [6.332787816342825,2.254779205267403],
+    [6.439653468514054,2.1984835992674743],
+    [6.495474717362407,2.131959134067499],
+    [6.515773353307261,2.0380779434025444],
+    [6.637565168976392,1.9188234572265206],
+    [6.756819655152417,1.8452409019264209],
+    [6.886223459300869,1.7944943120642831],
+    [7.058761864832137,1.7615090286538935],
+    [7.23637492934962,1.751359710681466],
+    [7.4,1.774195676119428],
+    [7.540854468522448,1.8],
+    [7.693094238108862,1.842703572433314],
+    [7.863095314147024,1.8833008443230241],
+    [7.987424459309262,1.9213607867196274],
+    [8.140896346328306,1.9416594226644825],
+    [8.280844094787415,1.9276245181288099],
+    [8.401488705528026,1.8890182426918147],
+    [8.52695910069826,1.843173290610383],
+    [8.64760371143887,1.797328161610383],
+    [8.770661214394293,1.7490704942327076],
+    [8.891305825134904,1.705638434366088],
+    [9.033666465808825,1.6573805900698442],
+    [9.17120132205312,1.616361422418037],
+    [9.32321353158629,1.592232500269915],
+    [9.489703094408332,1.556039117047732],
+    [9.702037609311807,1.5367359793292343],
+    [9.926436585289343,1.5101941649663002],
+    [10.190495997081722,1.507781272751488],
+    [10.440152103280484,1.5252416181800579],
+    [10.640493423069614,1.5560633596860778],
+    [10.80076647890092,1.5961316236439038],
+    [10.967203883033427,1.6392820617523318],
+    [11.12439476471413,1.7040077189149738],
+    [11.235353034135803,1.7748977243788198],
+    [11.380215219214097,1.827294684939054],
+    [11.478844792033362,1.8827738196498898],
+    [11.574392190702024,1.9074312128547057],
+    [11.657610892768277,1.910513387005308],
+    [11.765486988039347,1.9259242577583178],
+    [11.870280909159817,1.932088606059522],
+    [12.005896571786305,1.932088606059522],
+    [12.123019189509181,1.910513387005308],
+    [12.301785290244098,1.8951025162522979],
+    [12.449229198301305,1.8396233815414618],
+    [12.601543213956914,1.7929848334729748],
+    [12.737653610925756,1.7411332536753208],
+    [12.89320835031872,1.7054852925644337],
+    [13.074688879610509,1.6665966077161931],
+    [13.275613751326418,1.6406708178173661],
+    [13.44089066193144,1.630948646605306],
+    [13.658019152334116,1.6439115415547194],
+    [13.865425471524734,1.6698373314535464],
+    [14.017739487180343,1.7119667400391403],
+    [14.157090607886538,1.760577596099441],
+    [14.2640344912192,1.7994662809476816],
+    [14.403385611925394,1.8448364132706287],
+    [14.500607324045996,1.916132335492403],
+    [14.57190324626777,1.9809468102394705],
+    [14.652921339701605,2.0587241799359512],
+    [14.682087853337785,2.142982997107139],
+    [14.63995844475219,2.288815565288041],
+    [14.59134758869189,2.3892780011459958],
+    [14.526533113944822,2.4767775420545366],
+    [14.448755744248341,2.554554911751018],
+    [14.358015479602447,2.616128662760732],
+    [14.267275214956552,2.677702413770446],
+    [14.176534950310657,2.7263132698307464],
+    [14.09227613313947,2.75872050720428],
+    [14.008308327013212,2.800849915789874],
+    [14.010936243359746,2.864934115330476],
+    [14.084517901062707,2.9306320239938337],
+    [14.131820395300325,2.975306601884917],
+    [14.134448311646858,3.0672836740136176],
+    [14.113424980874585,3.1697724115284553],
+    [14.066122486636967,3.2696332326967594],
+    [14,3.3405869740531857],
+    [13.955750000082526,3.4],
+    [13.945238334696388,3.466726958686832],
+    [13.87954042603303,3.5376807000432584],
+    [13.848005429874618,3.592866943320479],
+    [13.813842517369674,3.676960266409577],
+    [13.790191270250864,3.75842567315214],
+    [13.784935437557795,3.834635247201635],
+    [13.8,3.91084482125113],
+    [13.858517095260757,4],
+    [13.887424175072633,4.136845627053081],
+    [13.945238334696388,4.23407853187485],
+    [13.934726669310251,4.360218516508497],
+    [13.944143232888395,4.452195588637197],
+    [13.883375740665908,4.5684055255387666],
+    [13.8,4.689940509983739],
+    [13.710188387831822,4.8],
+    [13.597768527220222,4.893511608929069],
+    [13.488387041219747,4.954279101151555],
+    [13.369890431385898,5.008969844151793],
+    [13.242278697718676,5.02112334259629],
+    [13.135935586329325,5.048468714096409],
+    [12.993131979606481,5.0697373363742795],
+    [12.874635369772633,5.100121082485523],
+    [12.75310038532766,5.109236206318895],
+    [12.683217769271801,5.151773450874636],
+    [12.589028156326947,5.185195571597004],
+    [12.543452537160082,5.255078187652863],
+    [12.534337413326709,5.327999178319847],
+    [12.513068791048838,5.410035292820203],
+    [12.45230129882635,5.479917908876063],
+    [12.370265184325994,5.5194167787652955],
+    [12.294305819047887,5.5589156487652955],
+    [12.2,5.583222645654289],
+    [12.105888678019646,5.6],
+    [11.987581699998714,5.669465381647366],
+    [11.886175718837913,5.703267375367632],
+    [11.754347943328872,5.75735056532006],
+    [11.639421164679966,5.862136745852887],
+    [11.527874585403085,5.977063524501793],
+    [11.436609202358365,6.0277665150821935],
+    [11.294640828733245,6.088610103778673],
+    [11.16619325259623,6.139313094523073],
+    [11.041125875831243,6.190016084939473],
+    [10.926199097182337,6.22381807865974],
+    [10.78085052418519,6.27452106924014],
+    [10.665923745536283,6.267760670496087],
+    [10.520575172539136,6.288041866728247],
+    [10.41578899200631,6.31508346170446],
+    [10.263680020265108,6.308323062960406],
+    [10.111571048523908,6.331984458564594],
+    [9.969602674898788,6.318463661076486],
+    [9.8479154975058,6.301562664216354]
+
+];
+
+
+/* =========================================================
+   CONVERSION COORDONNÉES
+========================================================= */
+
+function coordToScreen(x, y) {
+
+    return {
+
+        left:
+            (x / LARGEUR_IMAGE) * 100
+            + DECALAGE_X,
+
+        top:
+            100 -
+            (y / HAUTEUR_IMAGE) * 100
+
+    };
+
+}
+
+
+/* =========================================================
+   POSITION SUR LA PISTE
+========================================================= */
+
+function positionSurPiste(score) {
+
+    const POINTS_PAR_TOUR = 30;
+
+    const progression =
+        (
+            score % POINTS_PAR_TOUR
+        )
+        / POINTS_PAR_TOUR;
+
+    const position =
+        progression * piste.length;
+
+    const index =
+        Math.floor(position)
+        % piste.length;
+
+    const suivant =
+        (index + 1)
+        % piste.length;
+
+    const fraction =
+        position -
+        Math.floor(position);
+
+    const p1 =
+        piste[index];
+
+    const p2 =
+        piste[suivant];
+
+    const x =
+        p1[0] +
+        (
+            p2[0] -
+            p1[0]
+        )
+        * fraction;
+
+    const y =
+        p1[1] +
+        (
+            p2[1] -
+            p1[1]
+        )
+        * fraction;
+
+    return coordToScreen(x, y);
+
+}
+
+
+/* =========================================================
+   POSITION DISCRÈTE
+========================================================= */
+
+function positionCle(score) {
+
+    const POINTS_PAR_TOUR = 30;
+
+    return Math.round(
+        score % POINTS_PAR_TOUR
+    );
+
+}
+
+
+/* =========================================================
+   POSITION DES GROUPES
+========================================================= */
+
+function appliquerPositionGroupe(
+    teamData,
+    indexDansGroupe,
+    tailleGroupe
+) {
+
+    const position =
+        positionSurPiste(
+            teamData.score
+        );
+
+
+    if (
+        tailleGroupe >= 3
+    ) {
+
+        return {
+
+            left:
+                position.left,
+
+            top:
+                position.top
+
+        };
+
+    }
+
+
+    if (
+        tailleGroupe === 1
+    ) {
+
+        return {
+
+            left:
+                position.left,
+
+            top:
+                position.top
+
+        };
+
+    }
+
+
+    const ECART_PX = 52;
+
+    const ecartPourcent =
+        (
+            ECART_PX /
+            window.innerWidth
+        ) * 100;
+
+    const decalage =
+        (
+            indexDansGroupe -
+            (tailleGroupe - 1) / 2
+        )
+        * ecartPourcent;
+
+    return {
+
+        left:
+            position.left +
+            decalage,
+
+        top:
+            position.top
+
+    };
+
+}
+
+
+/* =========================================================
+   AFFICHAGE DES ÉQUIPES
+========================================================= */
+
+function renderTeam(
+    teamData,
+    indexDansGroupe = 0,
+    tailleGroupe = 1
+) {
+
+    let el =
+        elCache.get(
+            teamData.name
+        );
+
+
+    if (!el) {
+
+        el =
+            document.createElement("div");
+
+        el.className =
+            "team";
+
+        el.innerHTML = `
+
+            <img
+                class="badge"
+                alt=""
+            >
+
+            <div class="team-info">
+
+                <div class="team-name"></div>
+
+                <div class="team-rank"></div>
+
+                <div class="team-score"></div>
+
+                <div class="team-laps"></div>
+
+                <div class="team-group-names"></div>
+
+            </div>
+
+        `;
+
+        map.appendChild(el);
+
+        elCache.set(
+            teamData.name,
+            el
+        );
+
+    }
+
+
+    el.classList.remove(
+        "multiple-position"
+    );
+
+
+    if (
+        tailleGroupe >= 3
+    ) {
+
+        el.classList.add(
+            "multiple-position"
+        );
+
+    }
+
+
+    const position =
+        appliquerPositionGroupe(
+            teamData,
+            indexDansGroupe,
+            tailleGroupe
+        );
+
+
+    el.style.left =
+        position.left + "%";
+
+    el.style.top =
+        position.top + "%";
+
+
+    el.classList.remove(
+        "info-down"
+    );
+
+
+    const positionPiste =
+        positionCle(
+            teamData.score
+        );
+
+
+    if (
+        tailleGroupe < 3 &&
+        positionPiste >= 13 &&
+        positionPiste <= 29
+    ) {
+
+        el.classList.add(
+            "info-down"
+        );
+
+    }
+
+
+    if (
+        tailleGroupe >= 3
+    ) {
+
+        el.style.zIndex =
+            100;
+
+    }
+
+    else if (
+        positionPiste >= 13 &&
+        positionPiste <= 29
+    ) {
+
+        el.style.zIndex =
+            90;
+
+    }
+
+    else {
+
+        el.style.zIndex =
+            50 -
+            Math.min(
+                teamData.rank,
+                40
+            );
+
+    }
+
+
+    const badge =
+        el.querySelector(
+            ".badge"
+        );
+
+
+    badge.classList.remove(
+        "gold",
+        "silver",
+        "bronze"
+    );
+
+
+    if (
+        tailleGroupe >= 3
+    ) {
+
+        badge.src =
+            "https://cdn-icons-png.flaticon.com/512/6325/6325609.png";
+
+        badge.alt =
+            "Plusieurs équipes à la même position";
+
+    }
+
+    else {
+
+        badge.src =
+            teamData.badge;
+
+        badge.alt =
+            "";
+
+
+        if (
+            teamData.rank === 1
+        ) {
+
+            badge.classList.add(
+                "gold"
+            );
+
+        }
+
+        else if (
+            teamData.rank === 2
+        ) {
+
+            badge.classList.add(
+                "silver"
+            );
+
+        }
+
+        else if (
+            teamData.rank === 3
+        ) {
+
+            badge.classList.add(
+                "bronze"
+            );
+
+        }
+
+    }
+
+
+    if (
+        tailleGroupe < 3
+    ) {
+
+        el.querySelector(
+            ".team-name"
+        ).textContent =
+            teamData.name;
+
+
+        el.querySelector(
+            ".team-rank"
+        ).textContent =
+            "Rang " +
+            teamData.rank;
+
+
+        el.querySelector(
+            ".team-score"
+        ).textContent =
+            teamData.score +
+            " points";
+
+
+        el.querySelector(
+            ".team-laps"
+        ).textContent =
+            "Tours : " +
+            teamData.laps;
+
+
+        el.querySelector(
+            ".team-group-names"
+        ).innerHTML =
+            "";
+
+    }
+
+    else {
+
+        el.querySelector(
+            ".team-name"
+        ).textContent =
+            "Position partagée";
+
+
+        el.querySelector(
+            ".team-rank"
+        ).textContent =
+            "Même position";
+
+
+        el.querySelector(
+            ".team-score"
+        ).textContent =
+            teamData.score +
+            " points";
+
+
+        el.querySelector(
+            ".team-laps"
+        ).textContent =
+            "Tours : " +
+            teamData.laps;
+
+
+        const namesContainer =
+            el.querySelector(
+                ".team-group-names"
+            );
+
+
+        namesContainer.innerHTML =
+            "<strong>Joueurs :</strong>";
+
+
+        teamData.groupNames.forEach(
+            name => {
+
+                const nameElement =
+                    document.createElement(
+                        "div"
+                    );
+
+                nameElement.textContent =
+                    "• " + name;
+
+                namesContainer.appendChild(
+                    nameElement
+                );
+
+            }
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CHARGEMENT GOOGLE SHEET
+========================================================= */
+
+async function load() {
+
+    try {
+
+        const response =
+            await fetch(
+                URL,
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Impossible de récupérer le Google Sheet."
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !Array.isArray(data) ||
+            data.length === 0
+        ) {
+
+            console.warn(
+                "Le Google Sheet ne contient aucune donnée."
+            );
+
+            return;
+
+        }
+
+
+        const nomsActuels =
+            new Set();
+
+
+        const teams =
+            data
+                .map(row => {
+
+                    const cles =
+                        Object.keys(row);
+
+
+                    if (
+                        cles.length === 0
+                    ) {
+
+                        return null;
+
+                    }
+
+
+                    const premiereColonne =
+                        cles[0];
+
+
+                    const name =
+                        String(
+                            row[premiereColonne]
+                            ?? ""
+                        ).trim();
+
+
+                    if (!name) {
+
+                        return null;
+
+                    }
+
+
+                    const scoreBrut =
+                        Number(
+                            row.Score ??
+                            row.score ??
+                            0
+                        );
+
+
+                    const score =
+                        Number.isFinite(
+                            scoreBrut
+                        )
+                        ? Math.max(
+                            0,
+                            scoreBrut
+                        )
+                        : 0;
+
+
+                    const rankBrut =
+                        Number(
+                            row.Rang ??
+                            row.rank ??
+                            999
+                        );
+
+
+                    const rank =
+                        Number.isFinite(
+                            rankBrut
+                        )
+                        ? rankBrut
+                        : 999;
+
+
+                    const badge =
+                        String(
+                            row.badge ??
+                            ""
+                        ).trim();
+
+
+                    const POINTS_PAR_TOUR = 30;
+
+
+                    const laps =
+                        Math.floor(
+                            score /
+                            POINTS_PAR_TOUR
+                        );
+
+
+                    nomsActuels.add(
+                        name
+                    );
+
+
+                    return {
+
+                        name:
+                            name,
+
+                        score:
+                            score,
+
+                        rank:
+                            rank,
+
+                        badge:
+                            badge,
+
+                        laps:
+                            laps
+
+                    };
+
+                })
+                .filter(
+                    team =>
+                        team !== null
+                );
+
+
+        /* =====================================================
+           SUPPRESSION DES ANCIENNES ÉQUIPES
+        ===================================================== */
+
+        elCache.forEach(
+            (
+                element,
+                name
+            ) => {
+
+                if (
+                    !nomsActuels.has(name)
+                ) {
+
+                    element.remove();
+
+                    elCache.delete(
+                        name
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           GROUPES
+        ===================================================== */
+
+        const groupes =
+            new Map();
+
+
+        teams.forEach(
+            team => {
+
+                const position =
+                    positionCle(
+                        team.score
+                    );
+
+
+                if (
+                    !groupes.has(
+                        position
+                    )
+                ) {
+
+                    groupes.set(
+                        position,
+                        []
+                    );
+
+                }
+
+
+                groupes
+                    .get(
+                        position
+                    )
+                    .push(
+                        team
+                    );
+
+            }
+        );
+
+
+        /* =====================================================
+           NOMS DES GROUPES
+        ===================================================== */
+
+        groupes.forEach(
+            group => {
+
+                if (
+                    group.length >= 3
+                ) {
+
+                    const groupNames =
+                        group.map(
+                            team =>
+                                team.name
+                        );
+
+
+                    group.forEach(
+                        team => {
+
+                            team.groupNames =
+                                groupNames;
+
+                        }
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           AFFICHAGE
+        ===================================================== */
+
+        groupes.forEach(
+            group => {
+
+                group.forEach(
+                    (
+                        team,
+                        index
+                    ) => {
+
+                        renderTeam(
+                            team,
+                            index,
+                            group.length
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Erreur lors du chargement du Sheet :",
+            error
+        );
+
+    }
+
+}
+
+
+load();
+
+
+setInterval(
+    load,
+    5000
+);
+
+
+/* =========================================================
+   TRAITE MEUH-MEUH
+========================================================= */
+
+document
+    .getElementById("zoneMeuh")
+    .addEventListener(
+        "click",
+        function() {
+
+            window.open(
+                "https://sites.google.com/cssmi.qc.ca/coupe-alternative-2026-2027/traite-meuh-meuh",
+                "_blank"
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   PÊCHE AQUAZO
+========================================================= */
+
+document
+    .getElementById("zoneAquazo")
+    .addEventListener(
+        "click",
+        function() {
+
+            window.open(
+                "https://sites.google.com/cssmi.qc.ca/coupe-alternative-2026-2027/p%C3%AAche-aquazo",
+                "_blank"
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   DÉSERT DODO
+========================================================= */
+
+document
+    .getElementById("zoneDesertDodo")
+    .addEventListener(
+        "click",
+        function() {
+
+            window.open(
+                "https://sites.google.com/cssmi.qc.ca/coupe-alternative-2026-2027/d%C3%A9sert-dodo",
+                "_blank"
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   BOWSER NINJA
+========================================================= */
+
+document
+    .getElementById("zoneBowserNinja")
+    .addEventListener(
+        "click",
+        function() {
+
+            window.open(
+                "https://sites.google.com/cssmi.qc.ca/coupe-alternative-2026-2027/bowser-ninja",
+                "_blank"
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   PLUIE DE PIÈCES
+========================================================= */
+
+const coins = [
+
+    "https://static.wixstatic.com/media/4c45ee_e8e251c520ca42e5b138529231b91c81~mv2.png",
+
+    "https://static.wixstatic.com/media/4c45ee_3636b36d51d842e782efad8713407e10~mv2.png"
+
+];
+
+
+document
+    .getElementById("centerImg")
+    .onclick = () => {
+
+        for (
+            let i = 0;
+            i < 140;
+            i++
+        ) {
+
+            const coin =
+                document.createElement("img");
+
+
+            coin.className =
+                "coin-rain";
+
+
+            coin.src =
+                coins[
+                    Math.floor(
+                        Math.random()
+                        *
+                        coins.length
+                    )
+                ];
+
+
+            const x =
+                Math.random()
+                *
+                innerWidth;
+
+
+            const y =
+                -100
+                -
+                Math.random()
+                *
+                600;
+
+
+            const endX =
+                x
+                +
+                (
+                    Math.random()
+                    -
+                    .5
+                )
+                *
+                500;
+
+
+            const endY =
+                innerHeight
+                +
+                300;
+
+
+            coin.style.left =
+                x + "px";
+
+
+            coin.style.top =
+                y + "px";
+
+
+            coin.style.setProperty(
+                "--dx",
+                endX - x + "px"
+            );
+
+
+            coin.style.setProperty(
+                "--dy",
+                endY - y + "px"
+            );
+
+
+            document.body
+                .appendChild(
+                    coin
+                );
+
+
+            setTimeout(
+                () => {
+
+                    coin.remove();
+
+                },
+                4500
+            );
+
+        }
+
+    };
+
+</script>
+
+</body>
+</html
