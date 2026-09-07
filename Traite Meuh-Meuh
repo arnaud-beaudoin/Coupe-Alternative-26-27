@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traite Meuh-Meuh</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #000;
+    user-select: none;
+    touch-action: none;
+}
+
+/* =========================================================
+   JEU
+========================================================= */
+
+#game {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+
+    background-image:
+        url("https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/Ferme.png?raw=true");
+
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+
+/*
+   La zone de jeu correspond aux 3 sections du haut
+   sur un total de 5 sections.
+
+   3 / 5 = 60 %
+*/
+
+#playArea {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 60%;
+
+    overflow: visible;
+
+    z-index: 5;
+}
+
+/*
+   Ligne imaginaire située sous les 3 sections
+   supérieures.
+
+   Elle n'est pas visible.
+*/
+
+#cowLine {
+    position: absolute;
+
+    left: 0;
+    bottom: 0;
+
+    width: 100%;
+    height: 0;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   ÉCRAN D'ACCUEIL
+========================================================= */
+
+#startScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-image:
+        linear-gradient(
+            rgba(0,0,0,.12),
+            rgba(0,0,0,.12)
+        ),
+        url("https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/Prairie%20(1).png?raw=true");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    transition:
+        opacity .5s ease,
+        visibility .5s ease;
+}
+
+#startScreen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#startButton {
+    padding: 22px 65px;
+
+    border: 5px solid #fff;
+    border-radius: 18px;
+
+    background: #f1c232;
+    color: #000;
+
+    font-size: clamp(25px, 4vw, 48px);
+    font-weight: 900;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 0 #967500,
+        0 12px 25px rgba(0,0,0,.45);
+
+    transition:
+        transform .12s ease,
+        box-shadow .12s ease;
+}
+
+#startButton:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 11px 0 #967500,
+        0 15px 28px rgba(0,0,0,.45);
+}
+
+#startButton:active {
+    transform: translateY(5px);
+
+    box-shadow:
+        0 3px 0 #967500,
+        0 7px 15px rgba(0,0,0,.4);
+}
+
+
+/* =========================================================
+   COMPTE À REBOURS
+========================================================= */
+
+#countdownScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0,0,0,.28);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition: opacity .2s ease;
+}
+
+#countdownScreen.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+#countdownNumber {
+    color: #fff;
+
+    font-size: clamp(100px, 22vw, 300px);
+    font-weight: 900;
+
+    line-height: 1;
+
+    text-shadow:
+        0 8px 0 rgba(0,0,0,.35),
+        0 12px 30px rgba(0,0,0,.55);
+
+    transform: scale(.4);
+    opacity: 0;
+}
+
+#countdownNumber.show {
+    animation: countdownPop .85s ease forwards;
+}
+
+#countdownNumber.go {
+    font-size: clamp(80px, 16vw, 220px);
+}
+
+@keyframes countdownPop {
+
+    0% {
+        transform: scale(.35);
+        opacity: 0;
+    }
+
+    25% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+
+    70% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(.9);
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   VACHES
+========================================================= */
+
+.cow {
+    position: absolute;
+
+    width: clamp(90px, 11vw, 170px);
+    height: auto;
+
+    z-index: 30;
+
+    user-select: none;
+    pointer-events: none;
+
+    transform-origin: center center;
+
+    /*
+       Les vaches suivent instantanément leur déplacement.
+    */
+    transition: none;
+}
+
+
+/* =========================================================
+   TRAÎNÉE DE LAIT
+========================================================= */
+
+/*
+   Il n'y a plus de grosse goutte.
+
+   Cette traînée EST maintenant le lait.
+*/
+
+.milkTrail {
+
+    position: absolute;
+
+    width: clamp(7px, .65vw, 12px);
+
+    /*
+       Traînée beaucoup plus longue.
+    */
+
+    height: clamp(75px, 9vw, 145px);
+
+    z-index: 25;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(255,255,255,0),
+            rgba(255,255,255,.96) 12%,
+            #fff 50%,
+            rgba(255,255,255,.95) 88%,
+            rgba(255,255,255,0)
+        );
+
+    border-radius: 999px;
+
+    box-shadow:
+        0 0 5px rgba(255,255,255,.55);
+
+    transform-origin: top center;
+
+    opacity: 0;
+
+    animation:
+        milkFall linear forwards;
+}
+
+
+/*
+   Animation presque parfaitement verticale.
+*/
+
+@keyframes milkFall {
+
+    0% {
+        transform:
+            scaleY(.1);
+
+        opacity: 0;
+    }
+
+    10% {
+        transform:
+            scaleY(.55);
+
+        opacity: 1;
+    }
+
+    75% {
+        transform:
+            scaleY(1);
+
+        opacity: 1;
+    }
+
+    100% {
+        transform:
+            scaleY(1);
+
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   VERRE
+========================================================= */
+
+#glass {
+    position: absolute;
+
+    left: 50%;
+
+    /*
+       Le verre reste dans la zone jouable,
+       sous la ligne des vaches.
+    */
+
+    bottom: 5%;
+
+    width: clamp(90px, 10vw, 150px);
+    height: clamp(105px, 13vw, 180px);
+
+    transform: translateX(-50%);
+
+    z-index: 50;
+
+    pointer-events: none;
+}
+
+.glassBody {
+    position: absolute;
+
+    left: 5%;
+    right: 5%;
+    bottom: 0;
+
+    height: 90%;
+
+    border:
+        5px solid rgba(255,255,255,.9);
+
+    border-top:
+        7px solid rgba(255,255,255,.95);
+
+    border-radius:
+        8%
+        8%
+        16%
+        16%;
+
+    background:
+        rgba(220,240,255,.16);
+
+    overflow: hidden;
+
+    box-shadow:
+        inset 0 0 12px rgba(255,255,255,.25),
+        0 5px 15px rgba(0,0,0,.35);
+}
+
+.glassMilk {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 0%;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #fff 0%,
+            #f4f4f4 70%,
+            #ddd 100%
+        );
+
+    transition:
+        height .25s ease;
+
+    overflow: hidden;
+}
+
+.glassMilk::before {
+    content: "";
+
+    position: absolute;
+
+    left: -20%;
+    top: -7px;
+
+    width: 140%;
+    height: 15px;
+
+    background:
+        rgba(255,255,255,.8);
+
+    border-radius: 50%;
+
+    animation:
+        milkWave 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes milkWave {
+
+    from {
+        transform: translateX(-3%);
+    }
+
+    to {
+        transform: translateX(3%);
+    }
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+#hud {
+    position: fixed;
+
+    top: 20px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 100;
+
+    display: flex;
+
+    gap: 15px;
+
+    font-size:
+        clamp(18px, 3vw, 32px);
+
+    font-weight: 900;
+
+    pointer-events: none;
+}
+
+.hudBox {
+    min-width: 130px;
+
+    padding: 10px 18px;
+
+    border:
+        4px solid #fff;
+
+    border-radius: 14px;
+
+    background:
+        rgba(0,0,0,.65);
+
+    color: #fff;
+
+    text-align: center;
+
+    text-shadow:
+        2px 2px 0 #000;
+}
+
+
+/* =========================================================
+   ÉCRAN FINAL
+========================================================= */
+
+#endScreen {
+    position: fixed;
+    inset: 0;
+
+    z-index: 800;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        rgba(0,0,0,.72);
+
+    color: #fff;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition:
+        opacity .4s ease,
+        visibility .4s ease;
+}
+
+#endScreen.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#endTitle {
+    margin: 0 0 15px;
+
+    font-size:
+        clamp(40px, 8vw, 90px);
+
+    font-weight: 900;
+
+    text-align: center;
+
+    text-shadow:
+        0 5px 0 #000,
+        0 10px 25px rgba(0,0,0,.5);
+}
+
+#finalScore {
+    margin-bottom: 30px;
+
+    font-size:
+        clamp(25px, 5vw, 50px);
+
+    font-weight: 900;
+}
+
+#restartButton {
+    padding: 18px 45px;
+
+    border:
+        4px solid #fff;
+
+    border-radius: 15px;
+
+    background: #f1c232;
+    color: #000;
+
+    font-size:
+        clamp(20px, 3vw, 35px);
+
+    font-weight: 900;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 7px 0 #967500,
+        0 10px 20px rgba(0,0,0,.45);
+}
+
+#restartButton:active {
+    transform: translateY(4px);
+
+    box-shadow:
+        0 3px 0 #967500,
+        0 6px 12px rgba(0,0,0,.4);
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    #hud {
+        top: 10px;
+        gap: 7px;
+    }
+
+    .hudBox {
+        min-width: 95px;
+
+        padding:
+            7px 10px;
+
+        border-width: 3px;
+    }
+
+    #glass {
+        bottom: 3%;
+    }
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- =======================================================
+     JEU
+======================================================= -->
+
+<div id="game">
+
+    <!--
+       Les 3 sections supérieures occupent 60 %.
+       La ligne du bas de cette zone est la ligne
+       imaginaire des vaches.
+    -->
+
+    <div id="playArea">
+
+        <div id="cowLine"></div>
+
+
+        <!-- VACHE 1 -->
+
+        <img
+            class="cow"
+            id="cow0"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/Cr%C3%A9ation%20sans%20titre%20(2).png?raw=true"
+        >
+
+
+        <!-- VACHE 2 -->
+
+        <img
+            class="cow"
+            id="cow1"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/Cr%C3%A9ation%20sans%20titre%20(2).png?raw=true"
+        >
+
+
+        <!-- VACHE 3 -->
+
+        <img
+            class="cow"
+            id="cow2"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/Cr%C3%A9ation%20sans%20titre%20(2).png?raw=true"
+        >
+
+
+        <!-- VACHE 4 -->
+
+        <img
+            class="cow"
+            id="cow3"
+            src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/Cr%C3%A9ation%20sans%20titre%20(2).png?raw=true"
+        >
+
+    </div>
+
+
+    <!-- ===================================================
+         HUD
+    ==================================================== -->
+
+    <div id="hud">
+
+        <div class="hudBox">
+            LAIT :
+            <span id="score">0</span>
+        </div>
+
+        <div class="hudBox">
+            TEMPS :
+            <span id="timer">20</span>
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         VERRE
+    ==================================================== -->
+
+    <div id="glass">
+
+        <div class="glassBody">
+
+            <div
+                id="glassMilk"
+                class="glassMilk">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =======================================================
+     ÉCRAN D'ACCUEIL
+======================================================= -->
+
+<div id="startScreen">
+
+    <button id="startButton">
+        COMMENCER
+    </button>
+
+</div>
+
+
+<!-- =======================================================
+     COMPTE À REBOURS
+======================================================= -->
+
+<div id="countdownScreen">
+
+    <div id="countdownNumber">
+        3
+    </div>
+
+</div>
+
+
+<!-- =======================================================
+     FIN
+======================================================= -->
+
+<div id="endScreen">
+
+    <div id="endTitle">
+        FIN DE LA PARTIE !
+    </div>
+
+    <div id="finalScore">
+        Vous avez attrapé
+        <span id="finalScoreNumber">0</span>
+        litres de lait !
+    </div>
+
+    <button id="restartButton">
+        REJOUER
+    </button>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CONSTANTES
+========================================================= */
+
+const GAME_DURATION = 20;
+
+const MAX_MILK = 50;
+
+
+/*
+   La zone de jeu correspond aux 3 premières sections
+   sur 5.
+
+   3 / 5 = 0.60
+*/
+
+const PLAY_HEIGHT = 5 / 5;
+
+
+/*
+   Position verticale des vaches.
+
+   1 = bas de la zone de jeu.
+
+   On place donc le centre des vaches sur la ligne
+   située à 60 % de la hauteur de l'écran.
+*/
+
+const COW_VERTICAL_POSITION = 1;
+
+
+/*
+   Zone horizontale des vaches.
+
+   Elles restent dans les 2/9 à 7/9 de l'écran.
+*/
+
+const COW_MIN_X = 2 / 9;
+
+const COW_MAX_X = 7 / 9;
+
+
+/*
+   Vitesse des vaches.
+
+   Beaucoup plus rapide que précédemment.
+*/
+
+const COW_MIN_SPEED = 0.0012;
+
+const COW_MAX_SPEED = 0.0022;
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let score = 0;
+
+let timeLeft = GAME_DURATION;
+
+let gameStarted = false;
+
+let gameRunning = false;
+
+let timerInterval = null;
+
+let cowAnimationFrame = null;
+
+
+/* =========================================================
+   ÉLÉMENTS
+========================================================= */
+
+const game =
+    document.getElementById("game");
+
+const playArea =
+    document.getElementById("playArea");
+
+const startScreen =
+    document.getElementById("startScreen");
+
+const startButton =
+    document.getElementById("startButton");
+
+const countdownScreen =
+    document.getElementById("countdownScreen");
+
+const countdownNumber =
+    document.getElementById("countdownNumber");
+
+const endScreen =
+    document.getElementById("endScreen");
+
+const restartButton =
+    document.getElementById("restartButton");
+
+const scoreElement =
+    document.getElementById("score");
+
+const timerElement =
+    document.getElementById("timer");
+
+const finalScoreNumber =
+    document.getElementById("finalScoreNumber");
+
+const glass =
+    document.getElementById("glass");
+
+const glassMilk =
+    document.getElementById("glassMilk");
+
+
+/* =========================================================
+   VACHES
+========================================================= */
+
+const cows = [];
+
+for (let i = 0; i < 4; i++) {
+
+    cows.push({
+
+        element:
+            document.getElementById(
+                "cow" + i
+            ),
+
+        x: 0,
+
+        speed: 0,
+
+        milkTimer: null
+
+    });
+
+}
+
+
+/* =========================================================
+   INITIALISATION DES VACHES
+========================================================= */
+
+function initializeCows() {
+
+    cows.forEach((cow, index) => {
+
+        /*
+           Position horizontale aléatoire.
+        */
+
+        cow.x =
+            COW_MIN_X +
+            Math.random() *
+            (
+                COW_MAX_X -
+                COW_MIN_X
+            );
+
+
+        /*
+           Vitesse aléatoire beaucoup plus élevée.
+        */
+
+        const speed =
+            COW_MIN_SPEED +
+            Math.random() *
+            (
+                COW_MAX_SPEED -
+                COW_MIN_SPEED
+            );
+
+
+        /*
+           Alterne les directions.
+        */
+
+        cow.speed =
+            index % 2 === 0
+                ? speed
+                : -speed;
+
+
+        /*
+           Position horizontale.
+        */
+
+        cow.element.style.left =
+            (cow.x * 100) + "%";
+
+
+        /*
+           La ligne des vaches correspond à la limite
+           inférieure des 3 sections supérieures.
+
+           On place le bas de la vache sur cette ligne.
+        */
+
+        cow.element.style.top =
+            (
+                PLAY_HEIGHT * 100
+            ) + "%";
+
+
+        /*
+           Ajustement vertical :
+           la position top correspond au haut de l'image.
+           On remonte donc la vache de sa propre hauteur.
+        */
+
+        cow.element.style.transform =
+            cow.speed > 0
+                ? "translateY(-100%) scaleX(-1)"
+                : "translateY(-100%) scaleX(1)";
+
+    });
+
+}
+
+
+/* =========================================================
+   DIRECTION
+========================================================= */
+
+function updateCowDirection(cow) {
+
+    if (cow.speed > 0) {
+
+        cow.element.style.transform =
+            "translateY(-100%) scaleX(-1)";
+
+    } else {
+
+        cow.element.style.transform =
+            "translateY(-100%) scaleX(1)";
+
+    }
+
+}
+
+
+/* =========================================================
+   ANIMATION DES VACHES
+========================================================= */
+
+function animateCows() {
+
+    if (!gameRunning) {
+        return;
+    }
+
+
+    cows.forEach(cow => {
+
+        cow.x += cow.speed;
+
+
+        /*
+           Limite gauche.
+        */
+
+        if (
+            cow.x <= COW_MIN_X
+        ) {
+
+            cow.x =
+                COW_MIN_X;
+
+            cow.speed =
+                Math.abs(
+                    cow.speed
+                );
+
+            updateCowDirection(cow);
+        }
+
+
+        /*
+           Limite droite.
+        */
+
+        if (
+            cow.x >= COW_MAX_X
+        ) {
+
+            cow.x =
+                COW_MAX_X;
+
+            cow.speed =
+                -Math.abs(
+                    cow.speed
+                );
+
+            updateCowDirection(cow);
+        }
+
+
+        cow.element.style.left =
+            (cow.x * 100) + "%";
+
+    });
+
+
+    cowAnimationFrame =
+        requestAnimationFrame(
+            animateCows
+        );
+}
+
+
+/* =========================================================
+   PROGRAMMATION DU LAIT
+========================================================= */
+
+function scheduleCowMilk(cow) {
+
+    if (!gameRunning) {
+        return;
+    }
+
+
+    /*
+       Production imprévisible.
+
+       Entre 0,7 et 2,8 secondes.
+    */
+
+    const delay =
+        700 +
+        Math.random() * 2100;
+
+
+    cow.milkTimer =
+        setTimeout(() => {
+
+            if (!gameRunning) {
+                return;
+            }
+
+            createMilk(cow);
+
+            scheduleCowMilk(cow);
+
+        }, delay);
+}
+
+
+/* =========================================================
+   CRÉATION DU LAIT
+========================================================= */
+
+function createMilk(cow) {
+
+    /*
+       Position horizontale de la vache.
+
+       On vise approximativement le dessous de son corps.
+    */
+
+    const cowX =
+        cow.element.offsetLeft +
+        cow.element.offsetWidth * 0.50;
+
+
+    /*
+       La vache est sur la ligne à 60 %.
+
+       Le lait commence juste sous elle.
+    */
+
+    const cowBottom =
+        cow.element.offsetTop;
+
+
+    /*
+       Nouvelle traînée de lait.
+
+       Il n'y a plus de goutte principale.
+    */
+
+    const milk =
+        document.createElement("div");
+
+    milk.className =
+        "milkTrail";
+
+
+    /*
+       Largeur très fine.
+    */
+
+    const milkWidth =
+        milk.offsetWidth || 8;
+
+
+    milk.style.left =
+        (
+            cowX -
+            milkWidth / 2
+        ) + "px";
+
+
+    milk.style.top =
+        (
+            cowBottom
+        ) + "px";
+
+
+    /*
+       La traînée descend jusqu'au verre.
+
+       Sa longueur est calculée automatiquement
+       pour être droite.
+    */
+
+    const glassRect =
+        glass.getBoundingClientRect();
+
+    const gameRect =
+        game.getBoundingClientRect();
+
+
+    const targetY =
+        glassRect.top -
+        gameRect.top;
+
+
+    const startY =
+        cowBottom;
+
+
+    const distance =
+        Math.max(
+            60,
+            targetY - startY
+        );
+
+
+    milk.style.height =
+        distance + "px";
+
+
+    /*
+       Durée proportionnelle à la distance.
+       Le lait tombe rapidement mais reste visible.
+    */
+
+    const duration =
+        Math.max(
+            850,
+            distance * 2.2
+        );
+
+
+    milk.style.animationDuration =
+        duration + "ms";
+
+
+    game.appendChild(milk);
+
+
+    /*
+       On vérifie la collision pendant la chute.
+    */
+
+    animateMilk(
+        milk,
+        startY,
+        targetY,
+        duration
+    );
+}
+
+
+/* =========================================================
+   ANIMATION DU LAIT
+========================================================= */
+
+function animateMilk(
+    milk,
+    startY,
+    targetY,
+    duration
+) {
+
+    const startTime =
+        performance.now();
+
+
+    function animate(now) {
+
+        if (!gameRunning) {
+
+            milk.remove();
+
+            return;
+        }
+
+
+        const progress =
+            Math.min(
+                1,
+                (now - startTime) /
+                duration
+            );
+
+
+        /*
+           Position verticale de la traînée.
+        */
+
+        const currentY =
+            startY +
+            (
+                targetY -
+                startY
+            ) * progress;
+
+
+        milk.style.top =
+            currentY + "px";
+
+
+        /*
+           Collision avec le verre.
+        */
+
+        const milkRect =
+            milk.getBoundingClientRect();
+
+        const glassRect =
+            glass.getBoundingClientRect();
+
+
+        /*
+           On vérifie surtout la partie inférieure
+           de la traînée lorsqu'elle atteint le verre.
+        */
+
+        const collision =
+            milkRect.right >
+                glassRect.left &&
+
+            milkRect.left <
+                glassRect.right &&
+
+            milkRect.bottom >
+                glassRect.top &&
+
+            milkRect.top <
+                glassRect.bottom;
+
+
+        if (collision) {
+
+            catchMilk();
+
+            milk.remove();
+
+            return;
+        }
+
+
+        if (progress < 1) {
+
+            requestAnimationFrame(
+                animate
+            );
+
+        } else {
+
+            milk.remove();
+        }
+
+    }
+
+
+    requestAnimationFrame(
+        animate
+    );
+}
+
+
+/* =========================================================
+   ATTRAPER LE LAIT
+========================================================= */
+
+function catchMilk() {
+
+    if (!gameRunning) {
+        return;
+    }
+
+
+    score++;
+
+
+    scoreElement.textContent =
+        score;
+
+
+    /*
+       Le verre se remplit progressivement.
+
+       20 laits = 100 %.
+    */
+
+    const milkPercentage =
+        Math.min(
+            100,
+            (
+                score /
+                MAX_MILK
+            ) * 100
+        );
+
+
+    glassMilk.style.height =
+        milkPercentage + "%";
+}
+
+
+/* =========================================================
+   DÉPLACEMENT DU VERRE
+========================================================= */
+
+function moveGlass(clientX) {
+
+    if (!gameRunning) {
+        return;
+    }
+
+
+    const rect =
+        game.getBoundingClientRect();
+
+
+    let x =
+        clientX -
+        rect.left;
+
+
+    const glassWidth =
+        glass.offsetWidth;
+
+
+    const halfWidth =
+        glassWidth / 2;
+
+
+    /*
+       Empêche le verre de sortir de l'écran.
+    */
+
+    x =
+        Math.max(
+            halfWidth,
+            Math.min(
+                rect.width -
+                halfWidth,
+                x
+            )
+        );
+
+
+    glass.style.left =
+        x + "px";
+}
+
+
+/* =========================================================
+   SOURIS
+========================================================= */
+
+document.addEventListener(
+    "mousemove",
+    event => {
+
+        moveGlass(
+            event.clientX
+        );
+
+    }
+);
+
+
+/* =========================================================
+   TACTILE
+========================================================= */
+
+document.addEventListener(
+    "touchmove",
+    event => {
+
+        if (
+            event.touches &&
+            event.touches.length > 0
+        ) {
+
+            moveGlass(
+                event.touches[0].clientX
+            );
+
+        }
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+/* =========================================================
+   COMPTE À REBOURS
+========================================================= */
+
+function startCountdown() {
+
+    return new Promise(
+        resolve => {
+
+            countdownScreen.classList.add(
+                "active"
+            );
+
+
+            const numbers = [
+                "3",
+                "2",
+                "1",
+                "GO !"
+            ];
+
+
+            let index = 0;
+
+
+            function showNext() {
+
+                if (
+                    index >=
+                    numbers.length
+                ) {
+
+                    countdownScreen.classList.remove(
+                        "active"
+                    );
+
+                    resolve();
+
+                    return;
+                }
+
+
+                countdownNumber.classList.remove(
+                    "show",
+                    "go"
+                );
+
+
+                void countdownNumber.offsetWidth;
+
+
+                countdownNumber.textContent =
+                    numbers[index];
+
+
+                if (index === 3) {
+
+                    countdownNumber.classList.add(
+                        "go"
+                    );
+
+                }
+
+
+                countdownNumber.classList.add(
+                    "show"
+                );
+
+
+                index++;
+
+
+                setTimeout(
+                    showNext,
+                    850
+                );
+            }
+
+
+            showNext();
+
+        }
+    );
+}
+
+
+/* =========================================================
+   DÉBUT DE LA PARTIE
+========================================================= */
+
+async function startGame() {
+
+    if (gameStarted) {
+        return;
+    }
+
+
+    gameStarted = true;
+
+    gameRunning = false;
+
+
+    /*
+       Réinitialisation.
+    */
+
+    score = 0;
+
+    timeLeft =
+        GAME_DURATION;
+
+
+    scoreElement.textContent =
+        "0";
+
+
+    timerElement.textContent =
+        GAME_DURATION;
+
+
+    glassMilk.style.height =
+        "0%";
+
+
+    glass.style.left =
+        "50%";
+
+
+    /*
+       Cache l'accueil.
+    */
+
+    startScreen.classList.add(
+        "hidden"
+    );
+
+
+    /*
+       Positionnement des vaches.
+    */
+
+    initializeCows();
+
+
+    /*
+       Compte à rebours.
+    */
+
+    await startCountdown();
+
+
+    /*
+       GO !
+    */
+
+    gameRunning = true;
+
+
+    /*
+       Animation des vaches.
+    */
+
+    cancelAnimationFrame(
+        cowAnimationFrame
+    );
+
+
+    cowAnimationFrame =
+        requestAnimationFrame(
+            animateCows
+        );
+
+
+    /*
+       Chaque vache produit du lait
+       indépendamment.
+    */
+
+    cows.forEach(
+        cow => {
+            scheduleCowMilk(cow);
+        }
+    );
+
+
+    /*
+       Démarrage du chronomètre.
+    */
+
+    startTimer();
+}
+
+
+/* =========================================================
+   CHRONOMÈTRE
+========================================================= */
+
+function startTimer() {
+
+    clearInterval(
+        timerInterval
+    );
+
+
+    timerInterval =
+        setInterval(() => {
+
+            if (!gameRunning) {
+                return;
+            }
+
+
+            timeLeft--;
+
+
+            timerElement.textContent =
+                timeLeft;
+
+
+            if (
+                timeLeft <= 0
+            ) {
+
+                endGame();
+
+            }
+
+        }, 1000);
+}
+
+
+/* =========================================================
+   FIN DE LA PARTIE
+========================================================= */
+
+function endGame() {
+
+    if (!gameRunning) {
+        return;
+    }
+
+
+    gameRunning = false;
+
+
+    clearInterval(
+        timerInterval
+    );
+
+
+    cancelAnimationFrame(
+        cowAnimationFrame
+    );
+
+
+    /*
+       Arrête les programmations de lait.
+    */
+
+    cows.forEach(
+        cow => {
+
+            if (cow.milkTimer) {
+
+                clearTimeout(
+                    cow.milkTimer
+                );
+
+                cow.milkTimer = null;
+            }
+
+        }
+    );
+
+
+    /*
+       Supprime toutes les traînées
+       encore présentes.
+    */
+
+    document
+        .querySelectorAll(
+            ".milkTrail"
+        )
+        .forEach(
+            element => {
+                element.remove();
+            }
+        );
+
+
+    /*
+       Score final.
+    */
+
+    finalScoreNumber.textContent =
+        score;
+
+
+    endScreen.classList.add(
+        "active"
+    );
+}
+
+
+/* =========================================================
+   REJOUER
+========================================================= */
+
+function restartGame() {
+
+    gameStarted = false;
+
+    gameRunning = false;
+
+
+    clearInterval(
+        timerInterval
+    );
+
+
+    cancelAnimationFrame(
+        cowAnimationFrame
+    );
+
+
+    /*
+       Arrête les productions de lait.
+    */
+
+    cows.forEach(
+        cow => {
+
+            if (cow.milkTimer) {
+
+                clearTimeout(
+                    cow.milkTimer
+                );
+
+                cow.milkTimer = null;
+            }
+
+        }
+    );
+
+
+    /*
+       Nettoyage.
+    */
+
+    document
+        .querySelectorAll(
+            ".milkTrail"
+        )
+        .forEach(
+            element => {
+                element.remove();
+            }
+        );
+
+
+    /*
+       Réinitialisation.
+    */
+
+    score = 0;
+
+    timeLeft =
+        GAME_DURATION;
+
+
+    scoreElement.textContent =
+        "0";
+
+
+    timerElement.textContent =
+        GAME_DURATION;
+
+
+    glassMilk.style.height =
+        "0%";
+
+
+    glass.style.left =
+        "50%";
+
+
+    /*
+       Ferme l'écran final.
+    */
+
+    endScreen.classList.remove(
+        "active"
+    );
+
+
+    /*
+       Replace les vaches.
+    */
+
+    initializeCows();
+
+
+    /*
+       Retour à l'accueil.
+    */
+
+    startScreen.classList.remove(
+        "hidden"
+    );
+}
+
+
+/* =========================================================
+   BOUTONS
+========================================================= */
+
+startButton.addEventListener(
+    "click",
+    startGame
+);
+
+
+restartButton.addEventListener(
+    "click",
+    restartGame
+);
+
+
+/* =========================================================
+   INITIALISATION
+========================================================= */
+
+initializeCows();
+
+
+glass.style.left =
+    "50%";
+
+
+/* =========================================================
+   REDIMENSIONNEMENT
+========================================================= */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        if (!gameRunning) {
+            return;
+        }
+
+
+        const current =
+            parseFloat(
+                glass.style.left
+            );
+
+
+        if (isNaN(current)) {
+            return;
+        }
+
+
+        const width =
+            game.clientWidth;
+
+
+        const glassWidth =
+            glass.offsetWidth;
+
+
+        const half =
+            glassWidth / 2;
+
+
+        let x =
+            current;
+
+
+        x =
+            Math.max(
+                half,
+                Math.min(
+                    width - half,
+                    x
+                )
+            );
+
+
+        glass.style.left =
+            x + "px";
+    }
+);
+
+</script>
+
+</body>
+</html>
