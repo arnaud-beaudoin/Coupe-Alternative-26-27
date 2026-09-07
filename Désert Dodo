@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Désert Dodo</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+}
+
+#game {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+
+/* IMAGE */
+
+#background {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+
+    z-index: 1;
+}
+
+
+/* ÉCRAN DE DÉPART */
+
+#startScreen {
+    position: absolute;
+    inset: 0;
+
+    z-index: 10;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    padding-bottom: 9vh;
+}
+
+#startButton,
+#restartButton {
+    border: none;
+
+    background: #f1c232;
+    color: #111;
+
+    font-size: clamp(18px, 3vw, 28px);
+    font-weight: bold;
+
+    padding: 15px 35px;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 0 #8a6910,
+        0 10px 25px rgba(0, 0, 0, 0.5);
+
+    transition: transform 0.1s;
+}
+
+#startButton:hover,
+#restartButton:hover {
+    transform: scale(1.05);
+}
+
+#startButton:active,
+#restartButton:active {
+    transform: translateY(4px);
+}
+
+
+/* INTERFACE */
+
+#gameInterface {
+    position: absolute;
+    inset: 0;
+
+    z-index: 5;
+
+    display: none;
+
+    pointer-events: none;
+}
+
+
+/* CHRONOMÈTRE */
+
+#timer {
+    position: absolute;
+
+    top: 4vh;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    padding: 8px 18px;
+
+    border-radius: 10px;
+
+    background: rgba(0, 0, 0, 0.65);
+
+    color: #f1c232;
+
+    font-size: clamp(24px, 5vw, 42px);
+    font-weight: bold;
+}
+
+
+/* ERREURS */
+
+#errors {
+    position: absolute;
+
+    top: 13vh;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    padding: 7px 14px;
+
+    border-radius: 8px;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    color: white;
+
+    font-size: clamp(14px, 2.5vw, 20px);
+}
+
+
+/* NIVEAU */
+
+#level {
+    position: absolute;
+
+    top: 20vh;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    padding: 7px 14px;
+
+    border-radius: 8px;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    color: white;
+
+    font-size: clamp(14px, 2.5vw, 20px);
+}
+
+
+/* SÉQUENCE */
+
+#sequence {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: clamp(6px, 1.5vw, 15px);
+
+    max-width: 90vw;
+
+    flex-wrap: wrap;
+}
+
+.letter {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: clamp(45px, 8vw, 80px);
+    height: clamp(55px, 10vw, 90px);
+
+    border-radius: 12px;
+
+    background: #f1c232;
+
+    color: #111;
+
+    font-size: clamp(28px, 6vw, 55px);
+
+    font-weight: bold;
+
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.letter.done {
+    background: #70ad47;
+    color: white;
+}
+
+
+/* MESSAGE */
+
+#message {
+    position: absolute;
+
+    bottom: 14vh;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    padding: 8px 18px;
+
+    border-radius: 10px;
+
+    background: rgba(0, 0, 0, 0.65);
+
+    color: white;
+
+    font-size: clamp(16px, 3vw, 25px);
+    font-weight: bold;
+
+    opacity: 0;
+
+    transition: opacity 0.2s;
+}
+
+#message.show {
+    opacity: 1;
+}
+
+
+/* TREMBLEMENT */
+
+#gameInterface.wrong {
+    animation: shake 0.35s;
+}
+
+@keyframes shake {
+
+    0% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-10px);
+    }
+
+    40% {
+        transform: translateX(10px);
+    }
+
+    60% {
+        transform: translateX(-8px);
+    }
+
+    80% {
+        transform: translateX(8px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+
+}
+
+
+/* =========================================================
+   ÉCRAN DES INSTRUCTIONS
+========================================================= */
+
+#instructionsScreen {
+    position: absolute;
+    inset: 0;
+
+    z-index: 15;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-direction: column;
+
+    text-align: center;
+
+    padding: 25px;
+
+    background: rgba(0, 0, 0, 0.68);
+
+    color: white;
+}
+
+#instructionsScreen.show {
+    display: flex;
+}
+
+#instructionsTitle {
+    font-size: clamp(30px, 7vw, 60px);
+
+    font-weight: bold;
+
+    color: #f1c232;
+
+    margin-bottom: 20px;
+}
+
+#instructionsText {
+    max-width: 700px;
+
+    font-size: clamp(16px, 3vw, 25px);
+
+    line-height: 1.5;
+
+    margin-bottom: 30px;
+}
+
+
+/* BOUTON POUR LANCER LE COMPTE À REBOURS */
+
+#readyButton {
+    border: none;
+
+    background: #f1c232;
+    color: #111;
+
+    font-size: clamp(17px, 3vw, 25px);
+
+    font-weight: bold;
+
+    padding: 13px 30px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 0 #8a6910,
+        0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+
+/* =========================================================
+   COMPTE À REBOURS
+========================================================= */
+
+#countdownScreen {
+    position: absolute;
+    inset: 0;
+
+    z-index: 18;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-direction: column;
+
+    background: rgba(0, 0, 0, 0.55);
+}
+
+#countdownScreen.show {
+    display: flex;
+}
+
+#countdown {
+    color: #f1c232;
+
+    font-size: clamp(90px, 25vw, 220px);
+
+    font-weight: bold;
+
+    line-height: 1;
+
+    text-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.7);
+
+    animation: countdownPop 0.8s ease;
+}
+
+@keyframes countdownPop {
+
+    0% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+}
+
+
+/* =========================================================
+   ÉCRAN DE FIN
+========================================================= */
+
+#endScreen {
+    position: absolute;
+    inset: 0;
+
+    z-index: 20;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-direction: column;
+
+    text-align: center;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    padding: 20px;
+}
+
+#endScreen.show {
+    display: flex;
+}
+
+#endTitle {
+    color: #f1c232;
+
+    font-size: clamp(40px, 9vw, 80px);
+
+    font-weight: bold;
+
+    margin-bottom: 15px;
+}
+
+#endText {
+    color: white;
+
+    font-size: clamp(16px, 3vw, 25px);
+
+    margin-bottom: 30px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    #sequence {
+        max-width: 95vw;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div id="game">
+
+    <!-- IMAGE DE FOND -->
+
+    <img
+        id="background"
+        src="https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/D%C3%A9set%20dodo.png?raw=true"
+        alt=""
+    >
+
+
+    <!-- ÉCRAN DE DÉPART -->
+
+    <div id="startScreen">
+
+        <button id="startButton">
+            COMMENCER
+        </button>
+
+    </div>
+
+
+    <!-- INSTRUCTIONS -->
+
+    <div id="instructionsScreen">
+
+        <div id="instructionsTitle">
+            JEU DE MÉMOIRE
+        </div>
+
+        <div id="instructionsText">
+
+            Mémorise les lettres qui apparaissent à l'écran.<br><br>
+
+            Elles vont ensuite disparaître.<br>
+
+            Retape-les sur ton clavier,
+            <strong>dans le même ordre</strong>.<br><br>
+
+            La série s'allonge à chaque niveau.<br>
+
+            Tu as <strong>2 secondes</strong> pour commencer
+            à répondre.
+
+        </div>
+
+        <button id="readyButton">
+            JE SUIS PRÊT
+        </button>
+
+    </div>
+
+
+    <!-- COMPTE À REBOURS -->
+
+    <div id="countdownScreen">
+
+        <div id="countdown">
+            3
+        </div>
+
+    </div>
+
+
+    <!-- INTERFACE DU JEU -->
+
+    <div id="gameInterface">
+
+        <div id="timer">
+            20.0
+        </div>
+
+        <div id="errors">
+            Erreurs :
+            <span id="errorCount">0</span>
+            / 2
+        </div>
+
+        <div id="level">
+            Niveau :
+            <span id="levelNumber">1</span>
+        </div>
+
+        <div id="sequence"></div>
+
+        <div id="message"></div>
+
+    </div>
+
+
+    <!-- ÉCRAN DE FIN -->
+
+    <div id="endScreen">
+
+        <div id="endTitle">
+            VICTOIRE !
+        </div>
+
+        <div id="endText">
+            Tu as tenu 20 secondes !
+        </div>
+
+        <button id="restartButton">
+            REJOUER
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   PARAMÈTRES
+========================================================= */
+
+const GAME_DURATION = 20;
+
+const SHOW_TIME = 900;
+
+const NEXT_SEQUENCE_DELAY = 500;
+
+const INPUT_TIMEOUT = 2000;
+
+const LETTERS =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+
+/* =========================================================
+   IMAGES
+========================================================= */
+
+const START_IMAGE =
+    "https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/D%C3%A9set%20dodo.png?raw=true";
+
+const SLEEPING_IMAGE =
+    "https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/D%C3%A9set%20dodo%20zzzzz.png?raw=true";
+
+const AWAKE_IMAGE =
+    "https://github.com/arnaud-beaudoin/Coupe-Alternative-26-27/blob/main/D%C3%A9set%20dodo%20(2).png?raw=true";
+
+
+/* =========================================================
+   ÉLÉMENTS HTML
+========================================================= */
+
+const background =
+    document.getElementById("background");
+
+const startScreen =
+    document.getElementById("startScreen");
+
+const startButton =
+    document.getElementById("startButton");
+
+const instructionsScreen =
+    document.getElementById("instructionsScreen");
+
+const readyButton =
+    document.getElementById("readyButton");
+
+const countdownScreen =
+    document.getElementById("countdownScreen");
+
+const countdown =
+    document.getElementById("countdown");
+
+const gameInterface =
+    document.getElementById("gameInterface");
+
+const timerEl =
+    document.getElementById("timer");
+
+const errorCountEl =
+    document.getElementById("errorCount");
+
+const levelNumberEl =
+    document.getElementById("levelNumber");
+
+const sequenceEl =
+    document.getElementById("sequence");
+
+const messageEl =
+    document.getElementById("message");
+
+const endScreen =
+    document.getElementById("endScreen");
+
+const endTitle =
+    document.getElementById("endTitle");
+
+const endText =
+    document.getElementById("endText");
+
+const restartButton =
+    document.getElementById("restartButton");
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let sequence = [];
+
+let playerSequence = [];
+
+let level = 1;
+
+let errors = 0;
+
+let timeLeft = GAME_DURATION;
+
+let gameRunning = false;
+
+let acceptingInput = false;
+
+let timer = null;
+
+let inputTimeout = null;
+
+let countdownTimer = null;
+
+
+/* =========================================================
+   BOUTON COMMENCER
+========================================================= */
+
+startButton.addEventListener("click", () => {
+
+    startScreen.style.display = "none";
+
+    instructionsScreen.classList.add("show");
+
+});
+
+
+/* =========================================================
+   LANCEMENT DU COMPTE À REBOURS
+========================================================= */
+
+readyButton.addEventListener("click", () => {
+
+    instructionsScreen.classList.remove("show");
+
+    startCountdown();
+
+});
+
+
+/* =========================================================
+   COMPTE À REBOURS 3 → 2 → 1 → GO !
+========================================================= */
+
+function startCountdown() {
+
+    countdownScreen.classList.add("show");
+
+    let count = 3;
+
+    countdown.textContent = count;
+
+
+    countdownTimer = setInterval(() => {
+
+        count--;
+
+
+        if (count === 0) {
+
+            countdown.textContent = "GO !";
+
+            /*
+               Le jeu commence immédiatement
+               après l'apparition de GO !
+            */
+
+            setTimeout(() => {
+
+                countdownScreen.classList.remove(
+                    "show"
+                );
+
+                startGame();
+
+            }, 700);
+
+
+            clearInterval(countdownTimer);
+
+            return;
+        }
+
+
+        countdown.textContent = count;
+
+
+        /*
+           Relance l'animation à chaque chiffre
+        */
+
+        countdown.style.animation = "none";
+
+        void countdown.offsetWidth;
+
+        countdown.style.animation =
+            "countdownPop 0.8s ease";
+
+    }, 1000);
+}
+
+
+/* =========================================================
+   AJOUT D'UNE LETTRE
+========================================================= */
+
+function addLetterToSequence() {
+
+    const randomIndex =
+        Math.floor(
+            Math.random() * LETTERS.length
+        );
+
+    const newLetter =
+        LETTERS[randomIndex];
+
+    sequence.push(newLetter);
+
+    playerSequence = [];
+}
+
+
+/* =========================================================
+   AFFICHER LA SÉQUENCE
+========================================================= */
+
+function showSequence() {
+
+    acceptingInput = false;
+
+    clearTimeout(inputTimeout);
+
+    sequenceEl.innerHTML = "";
+
+
+    sequence.forEach(letter => {
+
+        const element =
+            document.createElement("div");
+
+        element.className =
+            "letter";
+
+        element.textContent =
+            letter;
+
+        sequenceEl.appendChild(element);
+
+    });
+
+
+    setTimeout(() => {
+
+        hideSequence();
+
+    }, SHOW_TIME);
+}
+
+
+/* =========================================================
+   CACHER LA SÉQUENCE
+========================================================= */
+
+function hideSequence() {
+
+    if (!gameRunning) return;
+
+    sequenceEl.innerHTML = "";
+
+    playerSequence = [];
+
+    acceptingInput = true;
+
+
+    messageEl.textContent =
+        "À toi !";
+
+    messageEl.classList.add("show");
+
+
+    setTimeout(() => {
+
+        messageEl.classList.remove("show");
+
+    }, 500);
+
+
+    /*
+       Le joueur a 2 secondes
+       pour commencer à taper.
+    */
+
+    clearTimeout(inputTimeout);
+
+    inputTimeout = setTimeout(() => {
+
+        if (!gameRunning) return;
+
+
+        if (playerSequence.length === 0) {
+
+            loseGame();
+
+        }
+
+    }, INPUT_TIMEOUT);
+}
+
+
+/* =========================================================
+   NIVEAU SUIVANT
+========================================================= */
+
+function nextLevel() {
+
+    if (!gameRunning) return;
+
+    level++;
+
+    levelNumberEl.textContent =
+        level;
+
+
+    setTimeout(() => {
+
+        if (!gameRunning) return;
+
+
+        /*
+           Une seule nouvelle lettre est ajoutée.
+
+           Exemple :
+
+           Q
+           QR
+           QRH
+           QRHO
+           QRHOS
+        */
+
+        addLetterToSequence();
+
+        showSequence();
+
+    }, NEXT_SEQUENCE_DELAY);
+}
+
+
+/* =========================================================
+   DÉMARRER LA PARTIE
+========================================================= */
+
+function startGame() {
+
+    gameRunning = true;
+
+    acceptingInput = false;
+
+    errors = 0;
+
+    level = 1;
+
+    sequence = [];
+
+    playerSequence = [];
+
+    timeLeft = GAME_DURATION;
+
+
+    errorCountEl.textContent = "0";
+
+    levelNumberEl.textContent = "1";
+
+    timerEl.textContent =
+        GAME_DURATION.toFixed(1);
+
+
+    background.src =
+        SLEEPING_IMAGE;
+
+    gameInterface.style.display =
+        "block";
+
+    endScreen.classList.remove("show");
+
+
+    /*
+       Première lettre aléatoire.
+    */
+
+    addLetterToSequence();
+
+    showSequence();
+
+    startTimer();
+}
+
+
+/* =========================================================
+   CHRONOMÈTRE
+========================================================= */
+
+function startTimer() {
+
+    cancelAnimationFrame(timer);
+
+    const startTime =
+        performance.now();
+
+
+    function updateTimer(now) {
+
+        if (!gameRunning) return;
+
+
+        const elapsed =
+            (now - startTime) / 1000;
+
+
+        timeLeft =
+            Math.max(
+                0,
+                GAME_DURATION - elapsed
+            );
+
+
+        timerEl.textContent =
+            timeLeft.toFixed(1);
+
+
+        if (timeLeft <= 0) {
+
+            winGame();
+
+            return;
+        }
+
+
+        timer =
+            requestAnimationFrame(
+                updateTimer
+            );
+    }
+
+
+    timer =
+        requestAnimationFrame(
+            updateTimer
+        );
+}
+
+
+/* =========================================================
+   CLAVIER
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (!gameRunning) return;
+
+        if (
+            event.key.length !== 1 ||
+            !/[a-zA-Z]/.test(event.key)
+        ) {
+            return;
+        }
+
+
+        if (!acceptingInput) return;
+
+
+        const pressedKey =
+            event.key.toUpperCase();
+
+
+        const expectedKey =
+            sequence[
+                playerSequence.length
+            ];
+
+
+        /* BONNE LETTRE */
+
+        if (pressedKey === expectedKey) {
+
+            playerSequence.push(
+                pressedKey
+            );
+
+
+            displayPlayerProgress();
+
+
+            /*
+               Toute la série est réussie.
+            */
+
+            if (
+                playerSequence.length ===
+                sequence.length
+            ) {
+
+                acceptingInput = false;
+
+                clearTimeout(inputTimeout);
+
+
+                messageEl.textContent =
+                    "✓ Correct !";
+
+                messageEl.classList.add("show");
+
+
+                setTimeout(() => {
+
+                    messageEl.classList.remove(
+                        "show"
+                    );
+
+                    nextLevel();
+
+                }, 350);
+
+            }
+
+        }
+
+
+        /* MAUVAISE LETTRE */
+
+        else {
+
+            handleMistake();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   PROGRESSION DU JOUEUR
+========================================================= */
+
+function displayPlayerProgress() {
+
+    sequenceEl.innerHTML = "";
+
+
+    playerSequence.forEach(letter => {
+
+        const element =
+            document.createElement("div");
+
+        element.className =
+            "letter done";
+
+        element.textContent =
+            letter;
+
+        sequenceEl.appendChild(element);
+
+    });
+}
+
+
+/* =========================================================
+   ERREUR
+========================================================= */
+
+function handleMistake() {
+
+    errors++;
+
+    errorCountEl.textContent =
+        errors;
+
+    acceptingInput = false;
+
+    clearTimeout(inputTimeout);
+
+
+    gameInterface.classList.remove(
+        "wrong"
+    );
+
+    void gameInterface.offsetWidth;
+
+    gameInterface.classList.add(
+        "wrong"
+    );
+
+
+    /*
+       Première erreur :
+       même série, même niveau.
+    */
+
+    if (errors === 1) {
+
+        messageEl.textContent =
+            "✗ Mauvaise lettre !";
+
+        messageEl.classList.add("show");
+
+
+        setTimeout(() => {
+
+            messageEl.classList.remove(
+                "show"
+            );
+
+
+            if (!gameRunning) return;
+
+
+            playerSequence = [];
+
+            showSequence();
+
+        }, 700);
+
+
+        return;
+    }
+
+
+    /*
+       Deuxième erreur :
+       momie réveillée.
+    */
+
+    if (errors >= 2) {
+
+        loseGame();
+
+    }
+}
+
+
+/* =========================================================
+   VICTOIRE
+========================================================= */
+
+function winGame() {
+
+    gameRunning = false;
+
+    acceptingInput = false;
+
+    clearTimeout(inputTimeout);
+
+    cancelAnimationFrame(timer);
+
+
+    timeLeft = 0;
+
+    timerEl.textContent =
+        "0.0";
+
+
+    background.src =
+        SLEEPING_IMAGE;
+
+
+    endTitle.textContent =
+        "VICTOIRE !";
+
+
+    endText.textContent =
+        "Tu as tenu 20 secondes ! Niveau atteint : " +
+        level;
+
+
+    endScreen.classList.add(
+        "show"
+    );
+}
+
+
+/* =========================================================
+   DÉFAITE
+========================================================= */
+
+function loseGame() {
+
+    gameRunning = false;
+
+    acceptingInput = false;
+
+    clearTimeout(inputTimeout);
+
+    cancelAnimationFrame(timer);
+
+
+    background.src =
+        AWAKE_IMAGE;
+
+
+    endTitle.textContent =
+        "ÉLIMINÉ !";
+
+
+    endText.textContent =
+        "La momie s'est réveillée au niveau " +
+        level +
+        ".";
+
+
+    endScreen.classList.add(
+        "show"
+    );
+}
+
+
+/* =========================================================
+   REJOUER
+========================================================= */
+
+restartButton.addEventListener(
+    "click",
+    () => {
+
+        clearTimeout(inputTimeout);
+
+        cancelAnimationFrame(timer);
+
+        startCountdown();
+
+    }
+);
+
+
+/* IMAGE INITIALE */
+
+background.src =
+    START_IMAGE;
+
+</script>
+
+</body>
+
+</html>
